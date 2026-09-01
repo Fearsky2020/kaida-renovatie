@@ -1,7 +1,7 @@
 (() => {
   const CONTACTS = {
     email: 'kailunlin0824@gmail.com',
-    phoneDisplay: '06 2119 1341',
+    phoneDisplay: '+31 6 2119 1341',
     phoneE164: '+31621191341',
     whatsappDigits: '31621191341',
     wechatId: 'linkailunLKL5566',
@@ -80,13 +80,16 @@
   });
 
   const contactCopy = document.querySelector('.contact-copy');
-  if (contactCopy && !contactCopy.querySelector('.contact-direct')) {
-    const direct = document.createElement('div');
-    direct.className = 'contact-direct';
+  if (contactCopy) {
+    let direct = contactCopy.querySelector('.contact-direct');
+    if (!direct) {
+      direct = document.createElement('div');
+      direct.className = 'contact-direct';
+      contactCopy.appendChild(direct);
+    }
     direct.innerHTML = `
       <a href="tel:${CONTACTS.phoneE164}">电话：${CONTACTS.phoneDisplay}</a>
       <a href="mailto:${CONTACTS.email}">邮箱：${CONTACTS.email}</a>`;
-    contactCopy.appendChild(direct);
   }
 
   const qrPlaceholder = document.querySelector('.qr-placeholder');
