@@ -14,12 +14,17 @@ const mobileAdminCss = fs.readFileSync(path.join(root, 'admin/mobile-admin.css')
 const backend = fs.readFileSync(path.join(root, 'backend.js'), 'utf8');
 const cms = fs.readFileSync(path.join(root, 'cms.js'), 'utf8');
 const homepageAdmin = fs.readFileSync(path.join(root, 'admin/homepage.js'), 'utf8');
-const workerPreview = fs.readFileSync(path.resolve('src/worker-preview.js'), 'utf8');
+const publicProjects = fs.readFileSync(path.join(root, 'projects.html'), 'utf8');
+const privacy = fs.readFileSync(path.join(root, 'privacy.html'), 'utf8');
+const robots = fs.readFileSync(path.join(root, 'robots.txt'), 'utf8');
+const liveWorker = fs.readFileSync(path.resolve('src/worker-live.js'), 'utf8');
 const worker = fs.readFileSync(path.resolve('src/worker.js'), 'utf8');
+const wrangler = fs.readFileSync(path.resolve('wrangler.toml'), 'utf8');
 const errors = [];
 
 for (const file of [
-  'index.html','styles.css','script.js','backend.js','cms.js','brand-icons.css','mobile-focus.css',
+  'index.html','styles.css','script.js','backend.js','cms.js','brand-icons.css','mobile-focus.css','project-gallery.css',
+  'projects.html','privacy.html','robots.txt',
   'admin/index.html','admin/homepage.js','admin/homepage.css','admin/dashboard.js','admin/dashboard.css','admin/mobile-admin.css',
   'admin/project-photos.css','admin/admin-auth.js','admin/projects.html','admin/projects.js','admin/projects.css','admin/inquiries.html','admin/inquiries.js','admin/admin.css'
 ]) {
@@ -34,6 +39,9 @@ for (const m of css.matchAll(/url\(['"]?([^)\'"?#]+)['"]?\)/g)) {
 
 for (const token of ['langToggle','quoteForm','compareRange','wechatModal']) {
   if (!index.includes(token) || !js.includes(token)) errors.push(`Frontend wiring missing: ${token}`);
+}
+for (const token of ['31621191341','kailunlin0824@gmail.com','linkailunLKL5566','privacy.html','form.whole_home','form.bathroom']) {
+  if (!index.includes(token)) errors.push(`Launch homepage content missing: ${token}`);
 }
 for (const token of ['首页内容','全部工程','homepage.js','projects.js','dashboard.js','客户询价','mobile-admin.css','admin-auth.js']) {
   if (!admin.includes(token)) errors.push(`Unified admin wiring missing: ${token}`);
@@ -51,8 +59,17 @@ if (!projectsAdmin.includes('#projects')) errors.push('Legacy project manager do
 for (const token of ['admin-dashboard-page','admin-inquiries-page','font-size:16px','100dvh','safe-area-inset-bottom']) {
   if (!mobileAdminCss.includes(token)) errors.push(`Mobile admin capability missing: ${token}`);
 }
-for (const token of ['/api/site-content','heroMedia','projectCards']) {
+for (const token of ['/api/site-content','heroMedia','projectCards','projects.html']) {
   if (!cms.includes(token)) errors.push(`Homepage CMS frontend wiring missing: ${token}`);
+}
+for (const token of ['/api/site-content','projectLibrary','viewer','filters']) {
+  if (!publicProjects.includes(token)) errors.push(`Public project gallery missing: ${token}`);
+}
+for (const token of ['隐私说明','Privacyverklaring','Cloudflare','kailunlin0824@gmail.com']) {
+  if (!privacy.includes(token)) errors.push(`Privacy notice missing: ${token}`);
+}
+for (const token of ['Disallow: /admin/','Disallow: /api/']) {
+  if (!robots.includes(token)) errors.push(`robots.txt protection missing: ${token}`);
 }
 for (const token of ['name="photos"','name="consent"','backend.js']) {
   if (!index.includes(token)) errors.push(`Inquiry form wiring missing: ${token}`);
@@ -60,11 +77,14 @@ for (const token of ['name="photos"','name="consent"','backend.js']) {
 for (const token of ['/api/inquiries','ADMIN_API_TOKEN','RESEND_API_KEY','WHATSAPP_ENABLED','WECHAT_WORK_WEBHOOK_URL']) {
   if (!worker.includes(token)) errors.push(`Worker capability missing: ${token}`);
 }
-for (const token of ['/api/admin/media','/api/admin/site-content','CMS_MEDIA','/cms-media/']) {
-  if (!workerPreview.includes(token)) errors.push(`CMS worker capability missing: ${token}`);
+for (const token of ['/api/admin/media','/api/admin/site-content','/cms-media/','publicSiteContent','published !== false','x-robots-tag']) {
+  if (!liveWorker.includes(token)) errors.push(`Live worker capability missing: ${token}`);
 }
 for (const token of ['客户询价','inquiries.js','后台密码','mobile-inquiry-nav','admin-auth.js']) {
   if (!inquiryAdmin.includes(token)) errors.push(`Inquiry admin wiring missing: ${token}`);
+}
+for (const token of ['main = "src/worker-live.js"','binding = "DB"','binding = "MEDIA"','PREVIEW_MODE = "false"','/admin/*']) {
+  if (!wrangler.includes(token)) errors.push(`Production Wrangler config missing: ${token}`);
 }
 if (!backend.includes('/api/inquiries')) errors.push('Frontend does not submit to inquiry API');
 
@@ -72,4 +92,4 @@ if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
 }
-console.log('Kaida checks passed: bilingual frontend, mobile-first unified admin, project library, multi-photo upload hooks, inquiry API, remembered admin login, and protected admin pages are wired.');
+console.log('Kaida checks passed: launch homepage, mobile admin, multi-photo projects, public gallery, hidden-project filtering, inquiry API, privacy notice, and production bindings are wired.');
