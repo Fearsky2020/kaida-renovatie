@@ -1,5 +1,5 @@
 name = "kaida-renovatie-preview"
-main = "src/worker.js"
+main = "src/worker-temporary.js"
 compatibility_date = "2026-09-01"
 
 [assets]
