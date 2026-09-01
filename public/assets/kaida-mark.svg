@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="title desc">
+  <title id="title">Kaida logo mark</title>
+  <desc id="desc">A warm copper house outline with an integrated K monogram.</desc>
+  <g fill="none" stroke="#a96f37" stroke-width="7" stroke-linecap="square" stroke-linejoin="miter">
+    <path d="M16 43V28L48 8l32 20v50H64"/>
+    <path d="M16 43v35"/>
+    <path d="M18 78V41"/>
+    <path d="M20 60 47 36"/>
+    <path d="M21 59 50 81"/>
+  </g>
+  <path d="M47 36h11L31 60l29 21H49L21 60z" fill="#a96f37"/>
+</svg>
