@@ -50,23 +50,19 @@ async function loadInquiries() {
     previewMode = Boolean(body.preview);
     items = body.items || [];
     renderList();
-    connectionEl.textContent = previewMode
-      ? 'Cloudflare 临时验收模式 · 正式上线切换 D1 + R2'
-      : '已连接真实后台 · D1 数据库';
+    connectionEl.textContent = previewMode ? 'Cloudflare 当前网站后台' : '已连接真实后台 · D1 数据库';
   } catch (error) {
     listEl.innerHTML = `<section class="card error-card"><strong>无法读取询价</strong><p>${escapeHtml(error.message)}</p><button class="save" id="retryAuth">重新输入密钥</button></section>`;
     summaryEl.textContent = '后台尚未连接';
-    connectionEl.textContent = '如果刚部署，请先配置 ADMIN_API_TOKEN。';
-    document.getElementById('retryAuth')?.addEventListener('click', () => {
-      if (getToken(true)) loadInquiries();
-    });
+    connectionEl.textContent = '请检查管理员密钥。';
+    document.getElementById('retryAuth')?.addEventListener('click', () => { if (getToken(true)) loadInquiries(); });
   }
 }
 
 function renderList() {
   const countNew = items.filter((item) => item.status === 'new').length;
   newCount.textContent = String(countNew);
-  summaryEl.textContent = `${items.length} 条询价${countNew ? ` · ${countNew} 条待处理` : ''}${previewMode ? ' · 临时验收数据' : ''}`;
+  summaryEl.textContent = `${items.length} 条询价${countNew ? ` · ${countNew} 条待处理` : ''}`;
   listEl.innerHTML = '';
   emptyEl.hidden = items.length > 0;
 
@@ -75,153 +71,79 @@ function renderList() {
     article.className = 'card inquiry-card';
     article.innerHTML = `
       <div class="inquiry-main">
-        <div class="inquiry-title-row">
-          <div>
-            <span class="status-pill status-${escapeHtml(item.status)}">${statusLabel(item.status)}</span>
-            <h2>${escapeHtml(item.name)} <small>${escapeHtml(item.city)}</small></h2>
-          </div>
-          <time>${formatTime(item.createdAt)}</time>
-        </div>
-        <div class="inquiry-facts">
-          <span><b>工程</b>${projectLabel(item.projectType)}</span>
-          <span><b>联系</b>${escapeHtml(item.contact)}</span>
-          <span><b>照片</b>${item.photoCount || 0} 张</span>
-        </div>
+        <div class="inquiry-title-row"><div><span class="status-pill status-${escapeHtml(item.status)}">${statusLabel(item.status)}</span><h2>${escapeHtml(item.name)} <small>${escapeHtml(item.city)}</small></h2></div><time>${formatTime(item.createdAt)}</time></div>
+        <div class="inquiry-facts"><span><b>工程</b>${projectLabel(item.projectType)}</span><span><b>联系</b>${escapeHtml(item.contact)}</span><span><b>照片</b>${item.photoCount || 0} 张</span></div>
         ${item.message ? `<p class="inquiry-message">${escapeHtml(item.message)}</p>` : ''}
       </div>
-      <div class="inquiry-actions">
-        <button class="save" data-open="${item.id}">查看详情</button>
-        <select data-status="${item.id}" aria-label="更新状态">
-          ${statusOptions(item.status)}
-        </select>
-      </div>`;
+      <div class="inquiry-actions"><button class="save" data-open="${item.id}">查看详情</button><select data-status="${item.id}" aria-label="更新状态">${statusOptions(item.status)}</select></div>`;
     listEl.appendChild(article);
   });
 
-  listEl.querySelectorAll('[data-open]').forEach((button) => {
-    button.addEventListener('click', () => openDetail(button.dataset.open));
-  });
-  listEl.querySelectorAll('[data-status]').forEach((select) => {
-    select.addEventListener('change', () => changeStatus(select.dataset.status, select.value, select));
-  });
+  listEl.querySelectorAll('[data-open]').forEach((button) => button.addEventListener('click', () => openDetail(button.dataset.open)));
+  listEl.querySelectorAll('[data-status]').forEach((select) => select.addEventListener('change', () => changeStatus(select.dataset.status, select.value, select)));
 }
 
 async function changeStatus(id, status, select) {
   select.disabled = true;
   try {
-    await api(`/api/inquiries/${encodeURIComponent(id)}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ status }),
-    });
+    await api(`/api/inquiries/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify({ status }) });
     const item = items.find((entry) => entry.id === id);
     if (item) item.status = status;
     renderList();
-  } catch (error) {
-    window.alert(error.message);
-  } finally {
-    select.disabled = false;
-  }
+  } catch (error) { window.alert(error.message); }
+  finally { select.disabled = false; }
 }
 
 async function openDetail(id) {
   const item = items.find((entry) => entry.id === id);
   if (!item) return;
-
   detailBody.innerHTML = `
     <span class="status-pill status-${escapeHtml(item.status)}">${statusLabel(item.status)}</span>
     <h2>${escapeHtml(item.name)}</h2>
     <div class="detail-grid">
-      <p><b>城市</b><span>${escapeHtml(item.city)}</span></p>
-      <p><b>工程类型</b><span>${projectLabel(item.projectType)}</span></p>
-      <p><b>电话 / WhatsApp / 微信</b><span>${escapeHtml(item.contact)}</span></p>
-      <p><b>邮箱</b><span>${escapeHtml(item.email || '未填写')}</span></p>
-      <p class="full"><b>客户留言</b><span>${escapeHtml(item.message || '未填写')}</span></p>
-      <p class="full"><b>提交时间</b><span>${formatTime(item.createdAt)}</span></p>
+      <p><b>城市</b><span>${escapeHtml(item.city)}</span></p><p><b>工程类型</b><span>${projectLabel(item.projectType)}</span></p>
+      <p><b>电话 / WhatsApp / 微信</b><span>${escapeHtml(item.contact)}</span></p><p><b>邮箱</b><span>${escapeHtml(item.email || '未填写')}</span></p>
+      <p class="full"><b>客户留言</b><span>${escapeHtml(item.message || '未填写')}</span></p><p class="full"><b>提交时间</b><span>${formatTime(item.createdAt)}</span></p>
     </div>
-    <div class="detail-contact-actions">
-      ${whatsAppLink(item.contact) ? `<a class="primary-action" href="${whatsAppLink(item.contact)}" target="_blank" rel="noopener">WhatsApp 联系</a>` : ''}
-      ${item.email ? `<a class="save" href="mailto:${encodeURIComponent(item.email)}">发邮件</a>` : ''}
-      <button class="save" id="copyContactBtn">复制联系方式</button>
-    </div>
-    <div class="photo-section">
-      <h3>现场照片 <small>${item.photoCount || 0} 张</small></h3>
-      <div class="admin-photo-grid" id="photoGrid"></div>
-    </div>`;
-
+    <div class="detail-contact-actions">${whatsAppLink(item.contact) ? `<a class="primary-action" href="${whatsAppLink(item.contact)}" target="_blank" rel="noopener">WhatsApp 联系</a>` : ''}${item.email ? `<a class="save" href="mailto:${encodeURIComponent(item.email)}">发邮件</a>` : ''}<button class="save" id="copyContactBtn">复制联系方式</button></div>
+    <div class="photo-section"><h3>现场照片 <small>${item.photoCount || 0} 张</small></h3><div class="admin-photo-grid" id="photoGrid"></div></div>`;
   detailDialog.showModal();
-  document.getElementById('copyContactBtn').addEventListener('click', async () => {
-    await navigator.clipboard.writeText(item.contact);
-  });
+  document.getElementById('copyContactBtn').addEventListener('click', async () => navigator.clipboard.writeText(item.contact));
   await loadPhotos(item);
 }
 
 async function loadPhotos(item) {
   const grid = document.getElementById('photoGrid');
   if (!grid || !item.photoCount) {
-    if (grid) grid.innerHTML = previewMode
-      ? '<p class="muted">临时验收环境不保存客户照片；正式版将存入 Cloudflare R2。</p>'
-      : '<p class="muted">客户没有上传照片。</p>';
+    if (grid) grid.innerHTML = previewMode ? '<p class="muted">当前询价模式暂不保存客户上传照片。</p>' : '<p class="muted">客户没有上传照片。</p>';
     return;
   }
-
   grid.innerHTML = '<p class="muted">正在加载照片…</p>';
   const images = [];
   for (let index = 0; index < item.photoCount; index += 1) {
     try {
       const response = await api(`/api/inquiries/${encodeURIComponent(item.id)}/photos/${index}`);
-      const blob = await response.blob();
-      images.push(URL.createObjectURL(blob));
-    } catch (error) {
-      console.error(error);
-    }
+      images.push(URL.createObjectURL(await response.blob()));
+    } catch (error) { console.error(error); }
   }
-  grid.innerHTML = images.length
-    ? images.map((src, index) => `<a href="${src}" target="_blank" rel="noopener"><img src="${src}" alt="客户现场照片 ${index + 1}"></a>`).join('')
-    : '<p class="muted">照片暂时无法读取。</p>';
+  grid.innerHTML = images.length ? images.map((src, index) => `<a href="${src}" target="_blank" rel="noopener"><img src="${src}" alt="客户现场照片 ${index + 1}"></a>`).join('') : '<p class="muted">照片暂时无法读取。</p>';
 }
 
-function statusOptions(selected) {
-  return [
-    ['new', '新询价'],
-    ['contacted', '已联系'],
-    ['quoted', '已报价'],
-    ['won', '已成交'],
-    ['lost', '未成交'],
-  ].map(([value, label]) => `<option value="${value}"${value === selected ? ' selected' : ''}>${label}</option>`).join('');
-}
-
-function statusLabel(status) {
-  return ({ new: '新询价', contacted: '已联系', quoted: '已报价', won: '已成交', lost: '未成交' })[status] || status;
-}
-
+function statusOptions(selected) { return [['new','新询价'],['contacted','已联系'],['quoted','已报价'],['won','已成交'],['lost','未成交']].map(([value,label]) => `<option value="${value}"${value===selected?' selected':''}>${label}</option>`).join(''); }
+function statusLabel(status) { return ({new:'新询价',contacted:'已联系',quoted:'已报价',won:'已成交',lost:'未成交'})[status] || status; }
 function projectLabel(type) {
-  return ({ renovation: '装修', carpentry: '木工', furniture: '定制家具', wardrobe: '定制衣柜', kitchen: '厨房', other: '其他' })[type] || escapeHtml(type || '未填写');
+  return ({
+    whole_home:'全屋定制', interior_renovation:'室内翻新', restaurant:'餐馆装修', garden:'花园翻新', cabinets:'橱柜定制', bathroom:'卫浴翻新',
+    renovation:'室内翻新', carpentry:'木工', furniture:'定制家具', wardrobe:'橱柜定制', kitchen:'厨房 / 橱柜', other:'其他'
+  })[type] || escapeHtml(type || '未填写');
 }
-
-function formatTime(value) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return escapeHtml(value || '');
-  return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
-}
-
-function whatsAppLink(contact) {
-  const digits = String(contact || '').replace(/[^0-9+]/g, '').replace(/^00/, '+');
-  const normalized = digits.startsWith('+') ? digits.slice(1) : digits;
-  return normalized.length >= 8 ? `https://wa.me/${encodeURIComponent(normalized)}` : '';
-}
-
-function escapeHtml(value) {
-  return String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
-}
+function formatTime(value) { const date=new Date(value); return Number.isNaN(date.getTime()) ? escapeHtml(value||'') : new Intl.DateTimeFormat('zh-CN',{dateStyle:'medium',timeStyle:'short'}).format(date); }
+function whatsAppLink(contact) { const digits=String(contact||'').replace(/[^0-9+]/g,'').replace(/^00/,'+'); const normalized=digits.startsWith('+')?digits.slice(1):digits; return normalized.length>=8?`https://wa.me/${encodeURIComponent(normalized)}`:''; }
+function escapeHtml(value) { return String(value??'').replace(/[&<>'"]/g,(char)=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'})[char]); }
 
 statusFilter.addEventListener('change', loadInquiries);
 document.getElementById('refreshBtn').addEventListener('click', loadInquiries);
-document.getElementById('changeTokenBtn').addEventListener('click', () => {
-  if (getToken(true)) loadInquiries();
-});
+document.getElementById('changeTokenBtn').addEventListener('click', () => { if (getToken(true)) loadInquiries(); });
 document.getElementById('closeDialog').addEventListener('click', () => detailDialog.close());
-detailDialog.addEventListener('click', (event) => {
-  if (event.target === detailDialog) detailDialog.close();
-});
-
+detailDialog.addEventListener('click', (event) => { if (event.target === detailDialog) detailDialog.close(); });
 loadInquiries();
