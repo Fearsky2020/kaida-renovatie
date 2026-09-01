@@ -64,7 +64,7 @@ jobs:
           echo "ADMIN_ENCRYPTED=$ADMIN_ENCRYPTED"
 
           echo 'Checking real Cloudflare deployment...'
-          curl --fail --silent --show-error -H 'Sec-Fetch-Mode: navigate' "$PREVIEW_URL/" >/dev/null
+          curl --fail --silent --show-error "$PREVIEW_URL/index.html" >/dev/null
 
           RESPONSE="$(curl --fail --silent --show-error -X POST "$PREVIEW_URL/api/inquiries" \
             -H 'Accept: application/json' \
