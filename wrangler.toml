@@ -1,5 +1,18 @@
 name = "kaida-renovatie"
+main = "src/worker.js"
 compatibility_date = "2026-09-01"
 
 [assets]
 directory = "./public"
+binding = "ASSETS"
+run_worker_first = ["/api/*"]
+
+[[d1_databases]]
+binding = "DB"
+
+[[r2_buckets]]
+binding = "MEDIA"
+
+[vars]
+MAX_UPLOAD_MB = "8"
+WHATSAPP_ENABLED = "false"
