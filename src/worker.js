@@ -49,7 +49,10 @@ export default {
       } catch (error) {
         console.error("API error", error);
         const status = Number(error?.status) || 500;
-        const message = status >= 500 ? "Server error" : String(error?.message || "Request failed");
+        const revealInternalError = env.PREVIEW_MODE === "true";
+        const message = status >= 500 && !revealInternalError
+          ? "Server error"
+          : String(error?.message || "Request failed");
         return json({ ok: false, error: message }, status);
       }
     }
@@ -62,7 +65,9 @@ export default {
 async function ensureSchema(env) {
   if (!env.DB) throw httpError(503, "Database binding is not configured");
 
-  await env.DB.exec(`
+  // D1 is more predictable when each DDL statement is prepared separately.
+  // This also makes first-run provisioning failures easier to diagnose.
+  await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS inquiries (
       id TEXT PRIMARY KEY,
       created_at TEXT NOT NULL,
@@ -78,10 +83,16 @@ async function ensureSchema(env) {
       photo_keys TEXT NOT NULL DEFAULT '[]',
       source TEXT,
       user_agent TEXT
-    );
-    CREATE INDEX IF NOT EXISTS idx_inquiries_created_at ON inquiries(created_at DESC);
-    CREATE INDEX IF NOT EXISTS idx_inquiries_status ON inquiries(status);
-  `);
+    )
+  `).run();
+
+  await env.DB.prepare(
+    "CREATE INDEX IF NOT EXISTS idx_inquiries_created_at ON inquiries(created_at)"
+  ).run();
+
+  await env.DB.prepare(
+    "CREATE INDEX IF NOT EXISTS idx_inquiries_status ON inquiries(status)"
+  ).run();
 }
 
 async function createInquiry(request, env, ctx, url) {
@@ -105,7 +116,10 @@ async function createInquiry(request, env, ctx, url) {
 
   if (!consent) throw httpError(400, language === "nl" ? "Toestemming is verplicht" : "请先同意资料保存与联系");
 
-  const photos = form.getAll("photos").filter((item) => item instanceof File && item.size > 0);
+  const photos = form.getAll("photos").filter((item) => {
+    if (!item || typeof item !== "object") return false;
+    return typeof item.size === "number" && typeof item.stream === "function" && item.size > 0;
+  });
   if (photos.length > MAX_PHOTOS) {
     throw httpError(400, language === "nl" ? "Maximaal 10 foto's" : "最多上传 10 张照片");
   }
