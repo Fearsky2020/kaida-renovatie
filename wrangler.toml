@@ -8,9 +8,22 @@ directory = "./public"
 binding = "ASSETS"
 run_worker_first = ["/api/*", "/cms-media/*"]
 
+[[d1_databases]]
+binding = "DB"
+database_name = "kaida-renovatie-preview-db"
+database_id = "287e2d64-801e-4c9f-abdf-546f9ccefcf9"
+
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "kaida-renovatie-media"
+
+[[r2_buckets]]
+binding = "CMS_MEDIA"
+bucket_name = "kaida-renovatie-media"
+
 [vars]
 MAX_UPLOAD_MB = "8"
-PREVIEW_MODE = "true"
+PREVIEW_MODE = "false"
 NOTIFY_EMAIL = "kailunlin0824@gmail.com"
 WHATSAPP_ENABLED = "false"
 WHATSAPP_NOTIFY_TO = "31621191341"
