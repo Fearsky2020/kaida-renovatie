@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>凯达装修后台 · 首页管理</title>
+  <title>凯达装修后台</title>
   <link rel="stylesheet" href="homepage.css">
 </head>
 <body>
@@ -11,34 +11,99 @@
     <header class="admin-top">
       <div class="brandline">
         <img src="../assets/kaida-mark.svg" alt="">
-        <div><strong>凯达装修</strong><span>傻瓜式网站管理</span></div>
+        <div><strong>凯达装修</strong><span>网站管理</span></div>
       </div>
+
+      <nav class="admin-tabs" aria-label="后台功能">
+        <button class="admin-tab active" type="button" data-admin-tab="home">首页内容</button>
+        <button class="admin-tab" type="button" data-admin-tab="projects">全部工程</button>
+      </nav>
+
       <div class="top-actions">
-        <a href="projects.html">全部工程</a>
         <a href="inquiries.html">客户询价</a>
-        <button id="changeToken">更换管理员密钥</button>
+        <button id="changeToken" type="button">更换密钥</button>
         <a class="primary" href="../index.html" target="_blank" rel="noopener">打开网站 ↗</a>
       </div>
     </header>
 
     <main class="admin-main">
-      <div class="intro">
-        <div>
-          <h1>首页管理</h1>
-          <p>看到哪张图想换，就点那张下面的“选择新图片”。不用碰代码。</p>
+      <section class="admin-panel active" data-admin-panel="home">
+        <div class="intro">
+          <div>
+            <h1>首页内容</h1>
+            <p>首页大图、6 个精选工程、改造前后，都在这里直接改。</p>
+          </div>
+          <div class="tip">想增加第 7、8、9 个工程，不要覆盖旧图，直接点上面的“全部工程”。</div>
         </div>
-        <div class="tip">建议用横图。手机拍的照片也可以，单张不要超过 10 MB。</div>
-      </div>
+        <div id="editorRoot"></div>
+      </section>
 
-      <div id="editorRoot"></div>
+      <section class="admin-panel" data-admin-panel="projects" hidden>
+        <div class="projects-panel">
+          <section class="projects-hero-row">
+            <div>
+              <h1>全部工程</h1>
+              <p>所有历史工程都留在这里。首页只是从这里挑最多 6 个精选，不会覆盖旧项目。</p>
+            </div>
+            <button class="primary projects-add" type="button" id="addProject">＋ 新增工程</button>
+          </section>
+          <section class="projects-summary">
+            <strong id="countText">正在读取…</strong>
+            <span>首页最多展示 6 个精选工程</span>
+          </section>
+          <div id="projectList" class="projects-list"></div>
+        </div>
+      </section>
     </main>
 
-    <div class="save-bar">
-      <button class="save-all" id="saveAll">保存文字修改</button>
+    <div class="save-bar" id="homepageSaveBar">
+      <button class="save-all" type="button" id="saveAll">保存首页文字修改</button>
       <span class="global-status" id="globalStatus">图片更换后会自动保存</span>
     </div>
   </div>
 
+  <dialog id="editorDialog" class="project-dialog">
+    <form class="project-dialog-card" id="projectForm" novalidate onsubmit="return false">
+      <div class="project-dialog-head">
+        <div><small>工程资料</small><h2 id="dialogTitle">新增工程</h2></div>
+        <button class="project-close" type="button" id="closeProjectDialog" aria-label="关闭">×</button>
+      </div>
+
+      <input type="hidden" id="projectId">
+
+      <div class="project-image-box">
+        <div class="project-preview-wrap">
+          <div class="project-image-placeholder" id="projectImagePlaceholder">还没选图片</div>
+          <img id="projectPreview" alt="工程图片" hidden>
+        </div>
+        <div>
+          <label class="project-image-picker">选择 / 更换图片<input id="projectImage" type="file" accept="image/*"></label>
+          <p id="uploadStatus"></p>
+        </div>
+      </div>
+
+      <div class="project-fields">
+        <label>工程标题<input id="projectTitle" maxlength="120" placeholder="例如：餐馆整体翻新"></label>
+        <label>城市<input id="projectCity" maxlength="80" placeholder="例如：Rotterdam"></label>
+        <label>分类<select id="projectCategory"><option>全屋定制</option><option>室内翻新</option><option>餐馆装修</option><option>花园翻新</option><option>橱柜定制</option><option>卫浴翻新</option></select></label>
+        <label class="full">工程说明 <small>可不填</small><textarea id="projectDescription" rows="4" maxlength="1200" placeholder="简单写做了什么、客户需求、施工亮点……"></textarea></label>
+        <label class="project-toggle"><input id="projectPublished" type="checkbox" checked><span></span> 对外展示</label>
+        <label class="project-toggle"><input id="projectFeatured" type="checkbox"><span></span> 首页精选</label>
+      </div>
+
+      <div class="project-dialog-actions">
+        <button class="danger" type="button" id="deleteProject">删除工程</button>
+        <div>
+          <button type="button" id="cancelProject">取消</button>
+          <button class="primary" type="button" id="saveProject">保存工程</button>
+        </div>
+      </div>
+      <p class="project-form-status" id="formStatus"></p>
+    </form>
+  </dialog>
+
   <script src="homepage.js"></script>
+  <script src="projects.js"></script>
+  <script src="dashboard.js"></script>
 </body>
 </html>
