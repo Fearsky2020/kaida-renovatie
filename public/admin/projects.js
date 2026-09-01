@@ -19,6 +19,7 @@
     published: document.getElementById('projectPublished'),
     featured: document.getElementById('projectFeatured'),
     image: document.getElementById('projectImage'),
+    camera: document.getElementById('projectCamera'),
     preview: document.getElementById('projectPreview'),
     uploadStatus: document.getElementById('uploadStatus'),
   };
@@ -153,7 +154,8 @@
     fields.published.checked=true;
     fields.featured.checked=false;
     fields.image.value='';
-    fields.uploadStatus.textContent='';
+    if(fields.camera) fields.camera.value='';
+    fields.uploadStatus.textContent='照片会自动压缩成适合网站的大小再上传。';
     formStatus.textContent='';
     setPreview('');
     document.getElementById('deleteProject').hidden=true;
@@ -185,14 +187,32 @@
     if(dialog.open) dialog.close();
   }
 
+  function selectedImageFile(){
+    return fields.camera?.files?.[0] || fields.image?.files?.[0] || null;
+  }
+
+  function previewSelected(file, source){
+    if(!file) return;
+    if(source==='camera' && fields.image) fields.image.value='';
+    if(source==='image' && fields.camera) fields.camera.value='';
+    clearLocalPreview();
+    localPreviewUrl=URL.createObjectURL(file);
+    fields.preview.src=localPreviewUrl;
+    fields.preview.hidden=false;
+    placeholder.hidden=true;
+    fields.uploadStatus.textContent=`已选择：${file.name || '手机照片'} · ${window.KaidaImage?.formatBytes?.(file.size) || ''}`;
+  }
+
   async function uploadImageFor(projectId,file){
     if(!file) return '';
-    fields.uploadStatus.textContent='正在上传图片…';
+    fields.uploadStatus.textContent='正在处理照片…';
+    const prepared = await (window.KaidaImage?.prepare?.(file) || Promise.resolve(file));
+    fields.uploadStatus.textContent=`正在上传… ${window.KaidaImage?.formatBytes?.(prepared.size) || ''}`;
     const data=new FormData();
     data.set('slot',`library-${projectId}`);
-    data.set('file',file);
+    data.set('file',prepared,prepared.name || 'photo.jpg');
     const result=await api('/api/admin/media',{method:'POST',body:data});
-    fields.uploadStatus.textContent='✓ 图片已上传';
+    fields.uploadStatus.textContent='✓ 图片已上传并永久保存';
     return result.url;
   }
 
@@ -211,7 +231,8 @@
       const id=fields.id.value||makeId();
       let current=content.projectLibrary.find(p=>p.id===id)||{id,createdAt:new Date().toISOString(),image:''};
       let image=current.image||'';
-      if(fields.image.files?.[0]) image=await uploadImageFor(id,fields.image.files[0]);
+      const pickedFile = selectedImageFile();
+      if(pickedFile) image=await uploadImageFor(id,pickedFile);
       current={
         ...current,
         id,
@@ -297,15 +318,8 @@
   document.getElementById('closeProjectDialog')?.addEventListener('click',closeEditor);
   dialog.addEventListener('click',(event)=>{ if(event.target===dialog) closeEditor(); });
 
-  fields.image.addEventListener('change',()=>{
-    const file=fields.image.files?.[0];
-    if(!file) return;
-    clearLocalPreview();
-    localPreviewUrl=URL.createObjectURL(file);
-    fields.preview.src=localPreviewUrl;
-    fields.preview.hidden=false;
-    placeholder.hidden=true;
-  });
+  fields.image?.addEventListener('change',()=>previewSelected(fields.image.files?.[0], 'image'));
+  fields.camera?.addEventListener('change',()=>previewSelected(fields.camera.files?.[0], 'camera'));
 
   window.KaidaProjects = { reload:init };
   init();
