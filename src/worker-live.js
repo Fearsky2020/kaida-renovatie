@@ -8,36 +8,37 @@ const IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "avif", "heic", 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    let response;
 
     if (url.pathname === "/api/site-content" && request.method === "GET") {
-      return json({ ok: true, content: await loadSiteContent(env) });
-    }
-
-    if (url.pathname === "/api/admin/site-content" && request.method === "GET") {
-      if (!requireAdmin(request, env)) return json({ ok: false, error: "Unauthorized" }, 401);
-      return json({ ok: true, content: await loadSiteContent(env) });
-    }
-
-    if (url.pathname === "/api/admin/site-content" && request.method === "PUT") {
-      if (!requireAdmin(request, env)) return json({ ok: false, error: "Unauthorized" }, 401);
-      const content = await request.json().catch(() => null);
-      if (!content || typeof content !== "object" || Array.isArray(content)) {
-        return json({ ok: false, error: "Invalid content" }, 400);
+      response = json({ ok: true, content: await loadSiteContent(env) });
+    } else if (url.pathname === "/api/admin/site-content" && request.method === "GET") {
+      response = !requireAdmin(request, env)
+        ? json({ ok: false, error: "Unauthorized" }, 401)
+        : json({ ok: true, content: await loadSiteContent(env) });
+    } else if (url.pathname === "/api/admin/site-content" && request.method === "PUT") {
+      if (!requireAdmin(request, env)) {
+        response = json({ ok: false, error: "Unauthorized" }, 401);
+      } else {
+        const content = await request.json().catch(() => null);
+        if (!content || typeof content !== "object" || Array.isArray(content)) {
+          response = json({ ok: false, error: "Invalid content" }, 400);
+        } else {
+          await saveSiteContent(env, content);
+          response = json({ ok: true, content });
+        }
       }
-      await saveSiteContent(env, content);
-      return json({ ok: true, content });
+    } else if (url.pathname === "/api/admin/media" && request.method === "POST") {
+      response = !requireAdmin(request, env)
+        ? json({ ok: false, error: "Unauthorized" }, 401)
+        : await uploadCmsMedia(request, env);
+    } else if (url.pathname.startsWith("/cms-media/") && request.method === "GET") {
+      response = await serveCmsMedia(url.pathname.slice("/cms-media/".length), env);
+    } else {
+      response = await productionWorker.fetch(request, env, ctx);
     }
 
-    if (url.pathname === "/api/admin/media" && request.method === "POST") {
-      if (!requireAdmin(request, env)) return json({ ok: false, error: "Unauthorized" }, 401);
-      return uploadCmsMedia(request, env);
-    }
-
-    if (url.pathname.startsWith("/cms-media/") && request.method === "GET") {
-      return serveCmsMedia(url.pathname.slice("/cms-media/".length), env);
-    }
-
-    return productionWorker.fetch(request, env, ctx);
+    return hardenResponse(response, url.pathname);
   },
 };
 
@@ -71,7 +72,7 @@ async function uploadCmsMedia(request, env) {
 
   const ext = safeExtension(file.name, file.type);
   const mime = String(file.type || "").toLowerCase();
-  const looksLikeImage = mime.startsWith("image/") || (!mime || mime === "application/octet-stream") && IMAGE_EXTENSIONS.has(ext);
+  const looksLikeImage = mime.startsWith("image/") || ((!mime || mime === "application/octet-stream") && IMAGE_EXTENSIONS.has(ext));
   if (!looksLikeImage) {
     return json({ ok: false, error: `不支持这种图片格式：${mime || ext || "未知格式"}` }, 400);
   }
@@ -96,6 +97,28 @@ async function serveCmsMedia(encodedKey, env) {
   const headers = new Headers({ "cache-control": "public, max-age=31536000, immutable" });
   object.writeHttpMetadata(headers);
   return new Response(object.body, { headers });
+}
+
+function hardenResponse(response, pathname) {
+  const headers = new Headers(response.headers);
+  headers.set("x-content-type-options", "nosniff");
+  headers.set("referrer-policy", "strict-origin-when-cross-origin");
+  headers.set("x-frame-options", "SAMEORIGIN");
+  headers.set("permissions-policy", "camera=(self), microphone=(), geolocation=()");
+
+  if (pathname.startsWith("/admin")) {
+    headers.set("x-robots-tag", "noindex, nofollow, noarchive");
+    headers.set("cache-control", "no-store");
+  }
+  if (pathname.startsWith("/api/")) {
+    headers.set("cache-control", "no-store");
+  }
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
 }
 
 function requireAdmin(request, env) {
