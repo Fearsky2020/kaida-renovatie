@@ -18,7 +18,7 @@ binding = "MEDIA"
 bucket_name = "kaida-renovatie-media"
 
 [vars]
-MAX_UPLOAD_MB = "8"
+MAX_UPLOAD_MB = "25"
 PREVIEW_MODE = "false"
 NOTIFY_EMAIL = "kailunlin0824@gmail.com"
 WHATSAPP_ENABLED = "false"
