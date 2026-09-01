@@ -165,13 +165,15 @@ async function uploadImage(slot, file) {
   const status = root.querySelector(`[data-upload-status="${slot}"]`);
   const localUrl = URL.createObjectURL(file);
   if (img) img.src = localUrl;
-  if (status) status.textContent = '正在上传…';
+  if (status) status.textContent = '正在处理照片…';
   card?.classList.add('loading');
 
   try {
+    const prepared = await (window.KaidaImage?.prepare?.(file) || Promise.resolve(file));
+    if (status) status.textContent = `正在上传… ${window.KaidaImage?.formatBytes?.(prepared.size) || ''}`;
     const data = new FormData();
     data.set('slot', slot);
-    data.set('file', file);
+    data.set('file', prepared, prepared.name || 'photo.jpg');
     const result = await api('/api/admin/media', { method: 'POST', body: data });
     if (slot === 'hero') content.hero.image = result.url;
     else if (slot === 'before') content.beforeAfter.before = result.url;
@@ -179,7 +181,7 @@ async function uploadImage(slot, file) {
     else if (slot.startsWith('project-')) content.projects[Number(slot.split('-')[1])].image = result.url;
     await saveContent(false);
     if (img) img.src = result.url;
-    if (status) status.textContent = '✓ 已换好，网站已更新';
+    if (status) status.textContent = '✓ 已换好并永久保存';
     statusEl.textContent = '图片已自动保存';
   } catch (error) {
     if (status) status.textContent = `上传失败：${error.message}`;
