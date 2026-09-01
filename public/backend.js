@@ -1,4 +1,16 @@
 (() => {
+  const CONTACTS = {
+    wechatId: 'linkailunLKL5566',
+    wechatName: 'KaiLun / 凯伦',
+    wechatArea: 'Rotterdam / 鹿特丹',
+  };
+
+  const wechatId = document.getElementById('wechatId');
+  if (wechatId) {
+    wechatId.textContent = CONTACTS.wechatId;
+    wechatId.title = `${CONTACTS.wechatName} · ${CONTACTS.wechatArea}`;
+  }
+
   const form = document.getElementById('quoteForm');
   if (!form) return;
 
