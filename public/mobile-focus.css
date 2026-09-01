@@ -1,0 +1,32 @@
+@media (max-width:640px){
+  body{padding-bottom:62px}
+  .site-header{height:64px;position:sticky;top:0;background:rgba(247,245,241,.96);backdrop-filter:blur(12px);z-index:60}
+  .lang-toggle{padding:8px 6px}.menu-toggle{display:none!important}
+  .mobile-menu{display:none!important}
+  .hero{height:430px;padding:0 8px}
+  .hero-media{inset:0 8px;border-radius:0 0 16px 16px;background-position:center}
+  .hero-copy{padding:62px 18px 0;max-width:96%}
+  .hero h1{font-size:48px;margin-bottom:16px}
+  .hero .eyebrow{font-size:9px;margin-bottom:10px}
+  .hero-lead{font-size:17px;max-width:290px}
+  .hero-sub{font-size:13px;margin-bottom:22px;max-width:290px}
+  .hero-actions{gap:8px}.hero-actions .btn{min-height:42px;min-width:0;padding:0 15px;font-size:12px}
+  .image-label{right:10px;bottom:10px;padding:8px 10px;font-size:10px}
+  .trust-strip,.services,.before-after,.about,.center-actions{display:none!important}
+  .projects.section-pad{padding:42px 12px 34px}
+  .projects .section-head{margin-bottom:20px}.projects .section-head p{display:none}.projects .eyebrow{margin-bottom:6px}
+  .projects .section-head h2{font-size:32px}
+  .project-grid{gap:16px}.project-image,.project-featured .project-image{height:220px;border-radius:12px}
+  .project-meta{padding:9px 2px 0}.project-meta h3{font-size:15px}.project-meta p{font-size:11px}
+  .contact.section-pad{padding:28px 10px 22px}
+  .contact-card{padding:24px 18px;border-radius:16px;display:block}
+  .contact h2{font-size:31px;line-height:1.08}.contact-copy>p{font-size:13px}
+  .contact-buttons{margin-top:20px}.contact-buttons .btn{flex:1;min-height:44px;padding:0 10px;font-size:12px}
+  .contact-note{margin-top:18px!important}
+  .contact-direct{display:grid!important;gap:8px;margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.18);font-size:12px}
+  .contact-direct a{color:white;overflow-wrap:anywhere}
+  .quote-form{display:none!important}
+  .site-footer{padding:24px 14px 78px;grid-template-columns:1fr;gap:16px}.footer-links{flex-wrap:wrap}.site-footer small{grid-column:auto}
+  .mobile-contact-bar{height:58px;display:grid;grid-template-columns:repeat(3,1fr);position:fixed;left:0;right:0;bottom:0;z-index:70;background:#1f2420;color:white;box-shadow:0 -8px 30px rgba(0,0,0,.18)}
+  .mobile-contact-bar>*{display:grid;place-items:center;border:0;border-right:1px solid rgba(255,255,255,.12);background:transparent;color:white;font-size:12px;font-weight:700}
+}
