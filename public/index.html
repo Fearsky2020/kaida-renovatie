@@ -185,23 +185,26 @@
           <p class="contact-note"><span data-i18n="contact.area">服务区域：</span> Den Haag · Rotterdam · Delft · Rijswijk · Zoetermeer · Utrecht</p>
         </div>
 
-        <form class="quote-form" id="quoteForm">
-          <label><span data-i18n="form.name">姓名</span><input name="name" autocomplete="name" required /></label>
-          <label><span data-i18n="form.city">所在城市</span><input name="city" autocomplete="address-level2" required /></label>
-          <label><span data-i18n="form.contact">电话 / WhatsApp / 微信</span><input name="contact" required /></label>
-          <label><span data-i18n="form.type">工程类型</span>
+        <form class="quote-form" id="quoteForm" enctype="multipart/form-data">
+          <label><span data-i18n="form.name">姓名</span><input name="name" autocomplete="name" maxlength="120" required /></label>
+          <label><span data-i18n="form.city">所在城市</span><input name="city" autocomplete="address-level2" maxlength="120" required /></label>
+          <label><span data-i18n="form.contact">电话 / WhatsApp / 微信</span><input name="contact" maxlength="180" required /></label>
+          <label><span>邮箱 / E-mail <small>（可选）</small></span><input type="email" name="email" autocomplete="email" maxlength="254" /></label>
+          <label class="full"><span data-i18n="form.type">工程类型</span>
             <select name="type" required>
               <option value="" data-i18n="form.choose">请选择</option>
-              <option data-i18n="form.renovation">装修</option>
-              <option data-i18n="form.carpentry">木工</option>
-              <option data-i18n="form.furniture">定制家具</option>
-              <option data-i18n="form.wardrobe">定制衣柜</option>
-              <option data-i18n="form.kitchen">厨房</option>
-              <option data-i18n="form.other">其他</option>
+              <option value="renovation" data-i18n="form.renovation">装修</option>
+              <option value="carpentry" data-i18n="form.carpentry">木工</option>
+              <option value="furniture" data-i18n="form.furniture">定制家具</option>
+              <option value="wardrobe" data-i18n="form.wardrobe">定制衣柜</option>
+              <option value="kitchen" data-i18n="form.kitchen">厨房</option>
+              <option value="other" data-i18n="form.other">其他</option>
             </select>
           </label>
-          <label class="full"><span data-i18n="form.message">简单描述一下项目</span><textarea name="message" rows="4"></textarea></label>
-          <label class="upload full"><span data-i18n="form.photos">上传现场照片（最多 10 张）</span><input type="file" accept="image/*" multiple /></label>
+          <label class="full"><span data-i18n="form.message">简单描述一下项目</span><textarea name="message" rows="4" maxlength="3000"></textarea></label>
+          <label class="upload full"><span data-i18n="form.photos">上传现场照片（最多 10 张）</span><input name="photos" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple /></label>
+          <label class="consent full"><input type="checkbox" name="consent" value="yes" required /><span>我同意凯达装修保存这些资料并通过电话、WhatsApp、微信或邮件联系我。<small> / Ik geef toestemming om mijn gegevens te bewaren en contact met mij op te nemen.</small></span></label>
+          <label class="hp-field" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off" /></label>
           <button class="btn btn-dark full" type="submit" data-i18n="form.submit">提交询价</button>
           <p class="form-status full" id="formStatus" aria-live="polite"></p>
         </form>
@@ -243,6 +246,7 @@
     <a href="#contact" data-i18n="mobile.quote">报价</a>
   </div>
 
+  <script src="backend.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
