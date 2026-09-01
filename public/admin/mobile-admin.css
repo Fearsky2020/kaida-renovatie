@@ -1,0 +1,95 @@
+/* Mobile-first admin ergonomics */
+@media (max-width: 760px){
+  html{font-size:16px;-webkit-text-size-adjust:100%}
+  body.admin-dashboard-page,body.admin-inquiries-page{overflow-x:hidden}
+  button,a,input,select,textarea,label{touch-action:manipulation}
+
+  /* Unified dashboard */
+  .admin-dashboard-page .admin-top{position:sticky;top:0;display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 12px;z-index:50}
+  .admin-dashboard-page .brandline img{width:36px;height:36px}
+  .admin-dashboard-page .brandline strong{font-size:17px}
+  .admin-dashboard-page .brandline span{display:none}
+  .admin-dashboard-page .admin-tabs{grid-column:1/-1;order:3;width:100%;padding:3px;gap:3px}
+  .admin-dashboard-page .admin-tab{min-height:44px;padding:10px 8px;font-size:14px}
+  .admin-dashboard-page .top-actions{justify-content:flex-end;gap:5px}
+  .admin-dashboard-page .top-actions a,.admin-dashboard-page .top-actions button{min-height:40px;padding:9px 10px;font-size:12px}
+  .admin-dashboard-page .top-actions #changeToken{display:none}
+  .admin-dashboard-page .top-actions a.primary{display:none}
+
+  .admin-dashboard-page .admin-main{padding:18px 10px 28px}
+  .admin-dashboard-page .intro,.admin-dashboard-page .projects-hero-row{display:block;margin-bottom:16px}
+  .admin-dashboard-page .intro h1,.admin-dashboard-page .projects-hero-row h1{font-size:28px;line-height:1.15;margin-bottom:8px}
+  .admin-dashboard-page .intro p,.admin-dashboard-page .projects-hero-row p{font-size:13px;line-height:1.55}
+  .admin-dashboard-page .tip{margin-top:10px;font-size:12px;line-height:1.5}
+  .admin-dashboard-page .projects-add{width:100%;min-height:48px;margin-top:14px;font-size:15px}
+  .admin-dashboard-page .projects-summary{display:grid;gap:5px;padding:12px 14px}
+
+  .admin-dashboard-page .project-edit-grid,.admin-dashboard-page .compare-edit-grid{grid-template-columns:1fr;gap:12px}
+  .admin-dashboard-page .hero-editor{grid-template-columns:1fr}
+  .admin-dashboard-page .image-panel,.admin-dashboard-page .hero-editor .image-panel,.admin-dashboard-page .project-editor .image-panel,.admin-dashboard-page .compare-editor .image-panel{min-height:190px;max-height:260px}
+  .admin-dashboard-page .edit-panel{padding:14px}
+  .admin-dashboard-page .field{font-size:13px}
+  .admin-dashboard-page .field input,.admin-dashboard-page .field select,.admin-dashboard-page .project-fields input,.admin-dashboard-page .project-fields select,.admin-dashboard-page .project-fields textarea{font-size:16px;min-height:48px;padding:12px 13px}
+  .admin-dashboard-page .project-fields textarea{min-height:130px;line-height:1.5;resize:vertical}
+  .admin-dashboard-page .upload-btn,.admin-dashboard-page .project-image-picker{min-height:50px;font-size:15px;padding:14px 12px}
+
+  .admin-dashboard-page .project-row{grid-template-columns:92px minmax(0,1fr);gap:10px;padding:10px}
+  .admin-dashboard-page .project-row>img,.admin-dashboard-page .project-row-placeholder{width:92px;height:78px}
+  .admin-dashboard-page .project-main h2{font-size:16px;line-height:1.25}
+  .admin-dashboard-page .project-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .admin-dashboard-page .project-actions button{min-height:44px;padding:10px 8px}
+
+  /* Full-screen editor on phones, so keyboard never crushes it */
+  .admin-dashboard-page .project-dialog{width:100vw;max-width:none;height:100dvh;max-height:100dvh;margin:0;border-radius:0;overflow:hidden}
+  .admin-dashboard-page .project-dialog-card{height:100%;overflow:auto;padding:14px 12px calc(96px + env(safe-area-inset-bottom));overscroll-behavior:contain}
+  .admin-dashboard-page .project-dialog-head{position:sticky;top:-14px;z-index:4;background:#fff;padding:14px 0 10px;margin-bottom:10px;border-bottom:1px solid #eee8de}
+  .admin-dashboard-page .project-dialog-head h2{font-size:23px}
+  .admin-dashboard-page .project-close{min-width:44px;min-height:44px}
+  .admin-dashboard-page .project-image-box{grid-template-columns:1fr;padding:10px;gap:10px}
+  .admin-dashboard-page .project-preview-wrap{width:100%;height:190px}
+  .admin-dashboard-page .project-fields{grid-template-columns:1fr;gap:12px}
+  .admin-dashboard-page .project-fields .full{grid-column:1}
+  .admin-dashboard-page .project-toggle{min-height:48px;font-size:14px}
+  .admin-dashboard-page .project-dialog-actions{position:sticky;bottom:calc(-96px - env(safe-area-inset-bottom));z-index:5;margin:18px -12px 0;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:rgba(255,255,255,.98);border-top:1px solid #e8e2d8;display:grid;grid-template-columns:1fr}
+  .admin-dashboard-page .project-dialog-actions>div{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .admin-dashboard-page .project-dialog-actions button{min-height:48px;width:100%;font-size:15px}
+
+  /* Don't let iOS keyboard fight a fixed save bar */
+  .admin-dashboard-page .save-bar{position:sticky;bottom:0;padding:8px 10px calc(8px + env(safe-area-inset-bottom));justify-content:stretch;background:rgba(245,243,239,.98)}
+  .admin-dashboard-page .save-all{width:100%;min-width:0;min-height:48px;font-size:15px}
+  .admin-dashboard-page .global-status{display:none}
+
+  /* Inquiry page */
+  .admin-inquiries-page{display:block}
+  .admin-inquiries-page aside{display:none}
+  .admin-inquiries-page .mobile-inquiry-nav{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;background:rgba(255,255,255,.97);border-bottom:1px solid var(--line);backdrop-filter:blur(10px)}
+  .admin-inquiries-page .mobile-inquiry-nav strong{font-size:16px}
+  .admin-inquiries-page .mobile-inquiry-nav div{display:flex;gap:6px}
+  .admin-inquiries-page .mobile-inquiry-nav a{min-height:40px;display:inline-flex;align-items:center;padding:8px 10px;border-radius:8px;text-decoration:none;background:#eee9e1;color:#252621;font-size:12px;font-weight:700}
+  .admin-inquiries-page main{padding:18px 10px 40px;max-width:none}
+  .admin-inquiries-page header{margin-bottom:14px}
+  .admin-inquiries-page header h1{font-size:30px;margin:5px 0}
+  .admin-inquiries-page header p{font-size:13px;line-height:1.5}
+  .admin-inquiries-page header .save{width:100%;min-height:44px;margin-top:12px}
+  .admin-inquiries-page .card{padding:14px;border-radius:14px}
+  .admin-inquiries-page .inquiry-toolbar{display:grid;grid-template-columns:1fr;gap:12px}
+  .admin-inquiries-page .toolbar-actions{display:grid;grid-template-columns:1fr auto;gap:8px}
+  .admin-inquiries-page .toolbar-actions select,.admin-inquiries-page .inquiry-actions select{font-size:16px;min-height:46px;width:100%}
+  .admin-inquiries-page .toolbar-actions button,.admin-inquiries-page .inquiry-actions button,.admin-inquiries-page .inquiry-actions a{min-height:44px}
+  .admin-inquiries-page .inquiry-card{display:grid;grid-template-columns:1fr;gap:14px}
+  .admin-inquiries-page .inquiry-title-row{display:grid;gap:6px}
+  .admin-inquiries-page .inquiry-title-row h2{font-size:20px;margin:4px 0 0}
+  .admin-inquiries-page .inquiry-title-row time{white-space:normal}
+  .admin-inquiries-page .inquiry-actions{display:grid;grid-template-columns:1fr 1fr;min-width:0}
+  .admin-inquiries-page .detail-dialog{width:100vw;height:100dvh;max-height:100dvh;margin:0;border-radius:0;padding:18px 12px calc(28px + env(safe-area-inset-bottom));overflow:auto}
+  .admin-inquiries-page .detail-dialog h2{font-size:27px;margin:18px 0 14px}
+  .admin-inquiries-page .detail-grid{grid-template-columns:1fr}
+  .admin-inquiries-page .detail-grid .full{grid-column:1}
+  .admin-inquiries-page .detail-contact-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .admin-inquiries-page .detail-contact-actions a,.admin-inquiries-page .detail-contact-actions button{min-height:44px;display:flex;align-items:center;justify-content:center;text-align:center}
+  .admin-inquiries-page .admin-photo-grid{grid-template-columns:1fr 1fr;gap:8px}
+}
+
+@media (min-width:761px){
+  .mobile-inquiry-nav{display:none}
+}
