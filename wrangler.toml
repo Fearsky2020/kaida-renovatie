@@ -1,5 +1,5 @@
 name = "kaida-renovatie-preview"
-main = "src/worker-preview.js"
+main = "src/worker-live.js"
 compatibility_date = "2026-09-01"
 keep_vars = true
 
@@ -15,10 +15,6 @@ database_id = "287e2d64-801e-4c9f-abdf-546f9ccefcf9"
 
 [[r2_buckets]]
 binding = "MEDIA"
-bucket_name = "kaida-renovatie-media"
-
-[[r2_buckets]]
-binding = "CMS_MEDIA"
 bucket_name = "kaida-renovatie-media"
 
 [vars]
