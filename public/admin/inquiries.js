@@ -9,6 +9,7 @@ const newCount = document.getElementById('newCount');
 
 let adminToken = sessionStorage.getItem('kaidaAdminToken') || '';
 let items = [];
+let previewMode = false;
 
 function getToken(force = false) {
   if (!adminToken || force) {
@@ -46,9 +47,12 @@ async function loadInquiries() {
     const status = statusFilter.value;
     const response = await api(`/api/inquiries?limit=100${status ? `&status=${encodeURIComponent(status)}` : ''}`);
     const body = await response.json();
+    previewMode = Boolean(body.preview);
     items = body.items || [];
     renderList();
-    connectionEl.textContent = '已连接真实后台 · D1 数据库';
+    connectionEl.textContent = previewMode
+      ? 'Cloudflare 临时验收模式 · 正式上线切换 D1 + R2'
+      : '已连接真实后台 · D1 数据库';
   } catch (error) {
     listEl.innerHTML = `<section class="card error-card"><strong>无法读取询价</strong><p>${escapeHtml(error.message)}</p><button class="save" id="retryAuth">重新输入密钥</button></section>`;
     summaryEl.textContent = '后台尚未连接';
@@ -62,7 +66,7 @@ async function loadInquiries() {
 function renderList() {
   const countNew = items.filter((item) => item.status === 'new').length;
   newCount.textContent = String(countNew);
-  summaryEl.textContent = `${items.length} 条询价${countNew ? ` · ${countNew} 条待处理` : ''}`;
+  summaryEl.textContent = `${items.length} 条询价${countNew ? ` · ${countNew} 条待处理` : ''}${previewMode ? ' · 临时验收数据' : ''}`;
   listEl.innerHTML = '';
   emptyEl.hidden = items.length > 0;
 
@@ -154,7 +158,9 @@ async function openDetail(id) {
 async function loadPhotos(item) {
   const grid = document.getElementById('photoGrid');
   if (!grid || !item.photoCount) {
-    if (grid) grid.innerHTML = '<p class="muted">客户没有上传照片。</p>';
+    if (grid) grid.innerHTML = previewMode
+      ? '<p class="muted">临时验收环境不保存客户照片；正式版将存入 Cloudflare R2。</p>'
+      : '<p class="muted">客户没有上传照片。</p>';
     return;
   }
 
