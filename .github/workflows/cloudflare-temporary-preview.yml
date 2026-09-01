@@ -69,9 +69,22 @@ jobs:
           echo 'Waiting for temporary deployment propagation...'
           sleep 3
 
-          echo 'Checking real Cloudflare deployment...'
-          curl --retry 5 --retry-delay 2 --retry-all-errors --fail --silent --show-error "$PREVIEW_URL/" >/dev/null
+          echo 'Checking Worker health...'
+          HEALTH="$(curl --retry 5 --retry-delay 2 --retry-all-errors --fail --silent --show-error "$PREVIEW_URL/__health")"
+          echo "HEALTH=$HEALTH"
+          test "$HEALTH" = "ok"
 
+          echo 'Checking frontend...'
+          PAGE_STATUS="$(curl --silent --show-error -o /tmp/kaida-preview-page -w '%{http_code}' "$PREVIEW_URL/")"
+          echo "FRONTEND_STATUS=$PAGE_STATUS"
+          if [ "$PAGE_STATUS" != "200" ]; then
+            head -c 500 /tmp/kaida-preview-page || true
+            echo
+            exit 1
+          fi
+          grep -q '凯达装修' /tmp/kaida-preview-page
+
+          echo 'Checking D1 inquiry create/read...'
           RESPONSE="$(curl --retry 5 --retry-delay 2 --retry-all-errors --fail --silent --show-error -X POST "$PREVIEW_URL/api/inquiries" \
             -H 'Accept: application/json' \
             -F 'name=Cloudflare Preview Test' \
