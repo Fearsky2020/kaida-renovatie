@@ -16,6 +16,24 @@
     document.head.appendChild(link);
   }
 
+  function ensureImageTools() {
+    if (window.KaidaImage) return Promise.resolve(window.KaidaImage);
+    return new Promise((resolve, reject) => {
+      const existing = document.querySelector('script[data-kaida-image-tools]');
+      if (existing) {
+        existing.addEventListener('load', () => resolve(window.KaidaImage), { once: true });
+        existing.addEventListener('error', reject, { once: true });
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'image-tools.js';
+      script.dataset.kaidaImageTools = '1';
+      script.onload = () => resolve(window.KaidaImage);
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
   ensureStylesheet('brand-icons.css');
   ensureStylesheet('inquiry.css');
   ensureStylesheet('mobile-focus.css');
@@ -113,15 +131,30 @@
         status.textContent = isNl ? 'U kunt maximaal 10 foto’s uploaden.' : '最多上传 10 张现场照片。';
         return;
       }
-      const tooLarge = photos.find((file) => file.size > 8 * 1024 * 1024);
-      if (tooLarge) {
-        status.textContent = isNl ? `Foto groter dan 8 MB: ${tooLarge.name}` : `单张照片不能超过 8 MB：${tooLarge.name}`;
+      const rawTooLarge = photos.find((file) => file.size > 25 * 1024 * 1024);
+      if (rawTooLarge) {
+        status.textContent = isNl ? `Foto groter dan 25 MB: ${rawTooLarge.name}` : `单张原图不能超过 25 MB：${rawTooLarge.name}`;
         return;
       }
       submitButton.disabled = true;
-      status.textContent = isNl ? 'Aanvraag wordt verstuurd…' : '正在提交询价…';
+      status.textContent = isNl ? 'Foto’s worden voorbereid…' : '正在处理照片…';
       try {
+        let preparedPhotos = photos;
+        try {
+          const imageTools = await ensureImageTools();
+          if (imageTools?.prepareMany && photos.length) {
+            preparedPhotos = await imageTools.prepareMany(photos, (current, total) => {
+              status.textContent = isNl ? `Foto ${current}/${total} voorbereiden…` : `正在处理照片 ${current}/${total}…`;
+            });
+          }
+        } catch (error) {
+          console.warn('Image tools unavailable; uploading originals', error);
+        }
+
+        status.textContent = isNl ? 'Aanvraag wordt verstuurd…' : '正在提交询价…';
         const data = new FormData(form);
+        data.delete('photos');
+        preparedPhotos.forEach((photo) => data.append('photos', photo, photo.name || 'photo.jpg'));
         data.set('lang', isNl ? 'nl' : 'zh');
         const response = await fetch('/api/inquiries', { method: 'POST', headers: { Accept: 'application/json' }, body: data });
         const body = await response.json().catch(() => ({}));
@@ -133,7 +166,7 @@
         form.reset();
       } catch (error) {
         console.error(error);
-        status.textContent = isNl ? 'Versturen is niet gelukt. Neem contact op via WhatsApp.' : '提交失败，请直接通过微信或 WhatsApp 联系我们。';
+        status.textContent = isNl ? `Versturen is niet gelukt: ${error.message}` : `提交失败：${error.message}`;
       } finally {
         submitButton.disabled = false;
       }
