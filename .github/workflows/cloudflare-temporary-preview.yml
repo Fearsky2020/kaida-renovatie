@@ -85,7 +85,7 @@ jobs:
           grep -q '凯达装修' /tmp/kaida-preview-page
 
           echo 'Checking D1 inquiry create/read...'
-          RESPONSE="$(curl --retry 5 --retry-delay 2 --retry-all-errors --fail --silent --show-error -X POST "$PREVIEW_URL/api/inquiries" \
+          API_STATUS="$(curl --silent --show-error -o /tmp/kaida-api-response -w '%{http_code}' -X POST "$PREVIEW_URL/api/inquiries" \
             -H 'Accept: application/json' \
             -F 'name=Cloudflare Preview Test' \
             -F 'city=Rotterdam' \
@@ -94,8 +94,20 @@ jobs:
             -F 'message=Temporary deployment smoke test' \
             -F 'lang=zh' \
             -F 'consent=yes')"
-          echo "$RESPONSE" | grep -q '"ok":true'
+          echo "INQUIRY_CREATE_STATUS=$API_STATUS"
+          cat /tmp/kaida-api-response
+          echo
+          if [ "$API_STATUS" != "201" ]; then
+            exit 1
+          fi
+          grep -q '"ok":true' /tmp/kaida-api-response
 
-          LIST="$(curl --retry 5 --retry-delay 2 --retry-all-errors --fail --silent --show-error "$PREVIEW_URL/api/inquiries?limit=5" -H "Authorization: Bearer $ADMIN_TOKEN")"
-          echo "$LIST" | grep -q 'Cloudflare Preview Test'
+          LIST_STATUS="$(curl --silent --show-error -o /tmp/kaida-list-response -w '%{http_code}' "$PREVIEW_URL/api/inquiries?limit=5" -H "Authorization: Bearer $ADMIN_TOKEN")"
+          echo "INQUIRY_LIST_STATUS=$LIST_STATUS"
+          cat /tmp/kaida-list-response
+          echo
+          if [ "$LIST_STATUS" != "200" ]; then
+            exit 1
+          fi
+          grep -q 'Cloudflare Preview Test' /tmp/kaida-list-response
           echo 'REAL_CLOUDFLARE_SMOKE_TEST=PASS'
