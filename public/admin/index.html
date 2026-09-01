@@ -45,7 +45,7 @@
           <section class="projects-hero-row">
             <div>
               <h1>全部工程</h1>
-              <p>所有历史工程都留在这里。首页只是从这里挑最多 6 个精选，不会覆盖旧项目。</p>
+              <p>所有历史工程都留在这里。每个工程可放最多 20 张照片，首页只取封面和最多 6 个精选。</p>
             </div>
             <button class="primary projects-add" type="button" id="addProject">＋ 新增工程</button>
           </section>
@@ -73,19 +73,23 @@
 
       <input type="hidden" id="projectId">
 
-      <div class="project-image-box">
-        <div class="project-preview-wrap">
-          <div class="project-image-placeholder" id="projectImagePlaceholder">还没选图片</div>
-          <img id="projectPreview" alt="工程图片" hidden>
+      <section class="project-photo-manager">
+        <div class="project-photo-head">
+          <div><strong>工程照片</strong><span id="photoCount">0 / 20 张</span></div>
+          <small>第一张是封面，首页会用它。</small>
         </div>
-        <div>
-          <div class="project-image-actions">
-            <label class="project-image-picker">📷 现场拍照<input id="projectCamera" type="file" accept="image/*" capture="environment"></label>
-            <label class="project-image-picker">🖼 从相册选择<input id="projectImage" type="file" accept="image/*"></label>
-          </div>
-          <p id="uploadStatus">照片会自动压缩成适合网站的大小再上传。</p>
+        <div id="projectPhotoGrid" class="project-photo-grid">
+          <div class="project-photo-empty">还没添加照片</div>
         </div>
-      </div>
+        <div class="project-image-actions">
+          <button class="project-image-picker" type="button" id="openCamera">📷 现场拍照</button>
+          <label class="project-image-picker">🖼 从相册多选
+            <input id="projectImage" type="file" accept="image/*" multiple>
+          </label>
+          <input id="projectCamera" class="hidden-file-input" type="file" accept="image/*" capture="environment">
+        </div>
+        <p id="uploadStatus">一次可以选很多张，也可以之后继续追加。最多 20 张。</p>
+      </section>
 
       <div class="project-fields">
         <label>工程标题<input id="projectTitle" maxlength="120" placeholder="例如：餐馆整体翻新"></label>
@@ -108,7 +112,6 @@
   </dialog>
 
   <script src="../image-tools.js"></script>
-  <!-- 工程模块先启动并读取密码，首页模块随后复用同一份 sessionStorage，避免双弹窗。 -->
   <script src="projects.js"></script>
   <script src="homepage.js"></script>
   <script src="dashboard.js"></script>
