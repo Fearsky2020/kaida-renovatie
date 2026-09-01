@@ -49,13 +49,13 @@ jobs:
 
           cat > /tmp/claim-public.pem <<'PEM'
           -----BEGIN PUBLIC KEY-----
-          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnyj3n1cnJWrt2pY8PTpr
-          0DSF4qL4ufAkuXsD5dOcnzoDm3EvFdhqDQTK1n2IkcdJ/HPrssNsCIv+U7SxCiL3
-          4KU4IvwTuDya/4M78e+c9Zf8Nafp7x3k7sIlYm36VTRuT+788pqXGiUAFwdFiVER
-          C2szEP8835gXVHm+SmXt5bsRxyWvSw7DBlbGG43AnX+J6DKDC2x1Ng8cSDA206uo
-          AAf9YCeyMm/7W1pCyFfyoraiBy+Mm2lSCJwHb2StTEA2GqNbhJpqENfr5RLquNaT
-          TcxeM49qMBPqd7EaZXC+wyi8qS9v+hy9tbnH3HXZvyzD7XuumZB+J/X+s1RsgMh5
-          0QIDAQAB
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArSrfFWeXWIUXCeJM2x96
+          Hu11Lbe4tQFMPFQ9uBKZ3mWC0IpZQGKL7scot5tjpyyD6X7MrK85Qd2r34NSZb3f
+          rMB8NNOCNlWnskyI1ncNUAxLaFwjHvecLtMzX6w4yST+ZSuTHka+JveFVSuW/D/s
+          SCF9PcukBLmWpcjM9IMtAyau1gRbEeLrSF151EI9cenafVuKHEG4r+m1Q2ZCn0t6
+          YNMNEj/y4Nd/dP4ewxmacxegjAOZNLRfmy7qzur83bt05Zi2uw87TWHOJ9zC1MYM
+          XxT3RaMyUcX9MX/yw+wFDLKGwjiXbjF5ljKXYq2L4v/aqUkfgrh/aM8J8X2TgjiM
+          iQIDAQAB
           -----END PUBLIC KEY-----
           PEM
 
@@ -84,7 +84,7 @@ jobs:
           fi
           grep -q '凯达装修' /tmp/kaida-preview-page
 
-          echo 'Checking D1 inquiry create/read...'
+          echo 'Checking preview inquiry create/read...'
           API_STATUS="$(curl --silent --show-error -o /tmp/kaida-api-response -w '%{http_code}' -X POST "$PREVIEW_URL/api/inquiries" \
             -H 'Accept: application/json' \
             -F 'name=Cloudflare Preview Test' \
