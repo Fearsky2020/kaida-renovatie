@@ -19,6 +19,9 @@ jobs:
         with:
           node-version: 22
 
+      - name: Bundle static site into temporary Worker
+        run: node scripts/build-temporary-worker.mjs
+
       - name: Deploy to temporary Cloudflare account
         shell: bash
         run: |
@@ -64,12 +67,12 @@ jobs:
           echo "ADMIN_ENCRYPTED=$ADMIN_ENCRYPTED"
 
           echo 'Waiting for temporary deployment propagation...'
-          sleep 5
+          sleep 3
 
           echo 'Checking real Cloudflare deployment...'
-          curl --retry 10 --retry-delay 2 --retry-all-errors --fail --silent --show-error "$PREVIEW_URL/index.html" >/dev/null
+          curl --retry 5 --retry-delay 2 --retry-all-errors --fail --silent --show-error "$PREVIEW_URL/" >/dev/null
 
-          RESPONSE="$(curl --retry 10 --retry-delay 2 --retry-all-errors --fail --silent --show-error -X POST "$PREVIEW_URL/api/inquiries" \
+          RESPONSE="$(curl --retry 5 --retry-delay 2 --retry-all-errors --fail --silent --show-error -X POST "$PREVIEW_URL/api/inquiries" \
             -H 'Accept: application/json' \
             -F 'name=Cloudflare Preview Test' \
             -F 'city=Rotterdam' \
@@ -80,6 +83,6 @@ jobs:
             -F 'consent=yes')"
           echo "$RESPONSE" | grep -q '"ok":true'
 
-          LIST="$(curl --retry 10 --retry-delay 2 --retry-all-errors --fail --silent --show-error "$PREVIEW_URL/api/inquiries?limit=5" -H "Authorization: Bearer $ADMIN_TOKEN")"
+          LIST="$(curl --retry 5 --retry-delay 2 --retry-all-errors --fail --silent --show-error "$PREVIEW_URL/api/inquiries?limit=5" -H "Authorization: Bearer $ADMIN_TOKEN")"
           echo "$LIST" | grep -q 'Cloudflare Preview Test'
           echo 'REAL_CLOUDFLARE_SMOKE_TEST=PASS'
