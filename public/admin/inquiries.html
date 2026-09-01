@@ -2,30 +2,37 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>客户询价 · 凯达装修后台</title>
   <link rel="stylesheet" href="admin.css">
   <link rel="stylesheet" href="inquiries.css">
+  <link rel="stylesheet" href="mobile-admin.css">
 </head>
-<body>
+<body class="admin-inquiries-page">
   <aside>
     <div class="logo">凯达装修<small>管理后台</small></div>
     <nav>
-      <a href="index.html">＋ 发布新工程</a>
-      <a>工程案例</a>
+      <a href="index.html">网站管理</a>
+      <a href="index.html#projects">全部工程</a>
       <a class="active" href="inquiries.html">客户询价 <b id="newCount">0</b></a>
-      <a>首页精选</a>
-      <a>网站资料</a>
       <a href="../index.html" target="_blank">查看网站 ↗</a>
     </nav>
   </aside>
+
+  <div class="mobile-inquiry-nav">
+    <strong>凯达装修 · 客户询价</strong>
+    <div>
+      <a href="index.html">后台</a>
+      <a href="index.html#projects">工程</a>
+    </div>
+  </div>
 
   <main>
     <header>
       <div>
         <span>KAIDA ADMIN · INQUIRIES</span>
         <h1>客户询价</h1>
-        <p>客户提交后自动入库。这里查看联系方式、留言和现场照片，并标记处理进度。</p>
+        <p>客户提交后自动入库。手机上也可以直接看联系方式、留言和现场照片，并修改处理进度。</p>
       </div>
       <button class="save" id="changeTokenBtn">管理员密钥</button>
     </header>
