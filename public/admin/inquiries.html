@@ -34,13 +34,13 @@
         <h1>客户询价</h1>
         <p>客户提交后自动入库。手机上也可以直接看联系方式、留言和现场照片，并修改处理进度。</p>
       </div>
-      <button class="save" id="changeTokenBtn">管理员密钥</button>
+      <button class="save" id="changeTokenBtn">后台密码</button>
     </header>
 
     <section class="card inquiry-toolbar">
       <div>
         <strong id="summaryText">正在连接后台…</strong>
-        <span id="connectionText">首次打开需要输入管理员密钥。</span>
+        <span id="connectionText">首次在这台设备打开需要输入一次后台密码。</span>
       </div>
       <div class="toolbar-actions">
         <select id="statusFilter" aria-label="按状态筛选">
@@ -67,6 +67,7 @@
     <div id="detailBody"></div>
   </dialog>
 
-  <script src="inquiries.js"></script>
+  <script src="admin-auth.js?v=20260901-1718"></script>
+  <script src="inquiries.js?v=20260901-1718"></script>
 </body>
 </html>
