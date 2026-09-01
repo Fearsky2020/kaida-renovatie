@@ -1,3 +1,4 @@
+.contact-direct{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.16);font-size:12px}.contact-direct a{color:white;opacity:.9}
 @media (max-width:640px){
   body{padding-bottom:62px}
   .site-header{height:64px;position:sticky;top:0;background:rgba(247,245,241,.96);backdrop-filter:blur(12px);z-index:60}
