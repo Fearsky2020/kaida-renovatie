@@ -16,6 +16,7 @@ const mime = {
   '.webp': 'image/webp',
   '.ico': 'image/x-icon',
 };
+const textExtensions = new Set(['.html', '.css', '.js', '.json', '.svg']);
 
 function walk(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -29,9 +30,11 @@ for (const file of walk(publicDir)) {
   const rel = path.relative(publicDir, file).split(path.sep).join('/');
   const urlPath = '/' + rel;
   const ext = path.extname(file).toLowerCase();
+  const buffer = fs.readFileSync(file);
   assets[urlPath] = {
     type: mime[ext] || 'application/octet-stream',
-    body: fs.readFileSync(file).toString('base64'),
+    encoding: textExtensions.has(ext) ? 'text' : 'base64',
+    body: textExtensions.has(ext) ? buffer.toString('utf8') : buffer.toString('base64'),
   };
 }
 
@@ -58,12 +61,14 @@ function assetResponse(pathname, method) {
   });
   if (key.endsWith(".html")) headers.set("cache-control", "no-cache");
   else headers.set("cache-control", "public, max-age=300");
-  return new Response(method === "HEAD" ? null : decodeBase64(asset.body), { status: 200, headers });
+  const body = method === "HEAD" ? null : (asset.encoding === "text" ? asset.body : decodeBase64(asset.body));
+  return new Response(body, { status: 200, headers });
 }
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    if (url.pathname === "/__health") return new Response("ok", { status: 200 });
     if (url.pathname.startsWith("/api/")) return apiWorker.fetch(request, env, ctx);
 
     if (request.method === "GET" || request.method === "HEAD") {
