@@ -113,7 +113,7 @@ function render() {
     </section>
 
     <section class="section">
-      <div class="section-head"><div><h2>6 个精品工程</h2><p>这里只改当前首页的 6 个。要添加更多工程或更换首页精选，请去“全部工程”。</p><p><a href="projects.html" style="font-weight:700;text-decoration:underline">打开全部工程案例库 →</a></p></div></div>
+      <div class="section-head"><div><h2>6 个精品工程</h2><p>这里只改当前首页的 6 个。要增加更多工程或重新挑精选，点页面上方“全部工程”。</p></div></div>
       <div class="project-edit-grid">${projects}</div>
     </section>
 
@@ -215,7 +215,19 @@ async function init() {
 
 document.getElementById('saveAll').addEventListener('click', async () => {
   statusEl.textContent = '正在保存…';
-  try { await saveContent(true); } catch (error) { statusEl.textContent = `保存失败：${error.message}`; }
+  try {
+    await saveContent(true);
+    window.KaidaProjects?.reload?.();
+  } catch (error) {
+    statusEl.textContent = `保存失败：${error.message}`;
+  }
 });
-document.getElementById('changeToken').addEventListener('click', () => { if (getToken(true)) init(); });
+document.getElementById('changeToken').addEventListener('click', () => {
+  if (getToken(true)) {
+    init();
+    window.KaidaProjects?.reload?.();
+  }
+});
+
+window.KaidaHomepage = { reload: init };
 init();
