@@ -1,20 +1,16 @@
 name = "kaida-renovatie-preview"
-main = "src/worker.js"
+main = "src/worker-preview.js"
 compatibility_date = "2026-09-01"
+keep_vars = true
 
 [assets]
 directory = "./public"
 binding = "ASSETS"
 run_worker_first = ["/api/*"]
 
-[[d1_databases]]
-binding = "DB"
-
-[[r2_buckets]]
-binding = "MEDIA"
-
 [vars]
 MAX_UPLOAD_MB = "8"
+PREVIEW_MODE = "true"
 NOTIFY_EMAIL = "kailunlin0824@gmail.com"
 WHATSAPP_ENABLED = "false"
 WHATSAPP_NOTIFY_TO = "31621191341"
