@@ -1,6 +1,6 @@
 (() => {
   const KEY = 'kaidaAdminToken';
-  const THEME_KEY = 'kaidaTheme';
+  const THEME_KEY = 'kaida-theme';
   const originalSetItem = Storage.prototype.setItem;
   const originalRemoveItem = Storage.prototype.removeItem;
 
