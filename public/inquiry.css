@@ -1,0 +1,3 @@
+/* Real inquiry form */
+.quote-form label span small{font-weight:500;color:var(--muted)}
+.consent{display:flex!important;align-items:flex-start;gap:10px;font-weight:500!important;line-height:1.45}.consent input{width:auto!important;margin:3px 0 0!important;flex:0 0 auto;padding:0!important}.consent span{margin:0!important}.consent small{display:inline;font-size:11px}.hp-field{position:absolute!important;left:-9999px!important;width:1px!important;height:1px!important;overflow:hidden!important}.quote-form button[aria-busy="true"]{opacity:.7;cursor:wait}.form-status{min-height:1.5em}
