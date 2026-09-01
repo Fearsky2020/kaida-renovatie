@@ -2,9 +2,6 @@ name = "kaida-renovatie-preview"
 main = "src/worker-temporary-generated.js"
 compatibility_date = "2026-09-01"
 
-[[d1_databases]]
-binding = "DB"
-
 [vars]
 MAX_UPLOAD_MB = "8"
 PREVIEW_MODE = "true"
