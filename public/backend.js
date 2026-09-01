@@ -11,6 +11,72 @@
     wechatUrl: 'https://u.wechat.com/kCozOqTzL7Mo8-3Khw6a9nM?s=2',
   };
 
+  function ensureStylesheet(href) {
+    if (document.querySelector(`link[href="${href}"]`)) return;
+    const stylesheet = document.createElement('link');
+    stylesheet.rel = 'stylesheet';
+    stylesheet.href = href;
+    document.head.appendChild(stylesheet);
+  }
+
+  ensureStylesheet('brand-icons.css');
+
+  // Apply the compact copper K/house identity to the real header and footer.
+  const brand = document.querySelector('.site-header .brand');
+  if (brand) {
+    const cn = brand.querySelector('.brand-cn')?.textContent || '凯达装修';
+    const sub = brand.querySelector('.brand-sub')?.textContent || 'KAIDA RENOVATIE & MAATWERK';
+    brand.innerHTML = `
+      <img class="brand-mark" src="assets/kaida-mark.svg" alt="" aria-hidden="true">
+      <span class="brand-copy">
+        <span class="brand-cn">${cn}</span>
+        <span class="brand-sub">${sub}</span>
+      </span>`;
+  }
+
+  const footerBrand = document.querySelector('.site-footer > div:first-child');
+  if (footerBrand) {
+    footerBrand.classList.add('footer-brand');
+    footerBrand.innerHTML = `
+      <img class="brand-mark" src="assets/kaida-mark.svg" alt="凯达装修">
+      <span class="footer-brand-copy">
+        <strong>凯达装修</strong>
+        <span>KAIDA RENOVATIE & MAATWERK</span>
+      </span>`;
+  }
+
+  const iconSvg = {
+    renovation: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M7 22 24 8l17 14"/><path d="M11 20v20h26V20"/><path d="M17 40V29h14v11"/><path d="M19 17h10"/></svg>',
+    carpentry: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="m10 11 27 27"/><path d="m34 8 6 6-9 9-6-6z"/><path d="M8 35 31 12"/><path d="m7 34 7 7 5-5-7-7z"/><path d="m33 7 3-3 8 8-3 3"/></svg>',
+    furniture: '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="10" y="8" width="28" height="32" rx="1"/><path d="M10 27h28M24 8v19M14 32h8M28 32h6M14 40v3M34 40v3"/></svg>',
+    wardrobe: '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="10" y="7" width="28" height="34" rx="1"/><path d="M24 7v34M20 24h1M27 24h1"/></svg>',
+    kitchen: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 20h36v20H6zM6 30h36M18 20v20M32 20v20"/><path d="M9 12h8v8M31 12h8v8M12 30v4M23 30v4M36 30v4"/><path d="M11 9v3M35 9v3"/></svg>',
+  };
+
+  document.querySelectorAll('.service-item').forEach((item, index) => {
+    const keys = ['renovation', 'carpentry', 'furniture', 'wardrobe', 'kitchen'];
+    const oldNumber = item.querySelector(':scope > span');
+    if (!oldNumber) return;
+    const icon = document.createElement('span');
+    icon.className = 'service-icon';
+    icon.innerHTML = iconSvg[keys[index]] || iconSvg.renovation;
+    oldNumber.replaceWith(icon);
+  });
+
+  const aboutIcons = [
+    '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="m10 33 19-19 5 5-19 19H10z"/><path d="m27 12 3-3 9 9-3 3M10 38l6-1-5-5z"/><path d="M17 28l3 3M22 23l3 3"/></svg>',
+    '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="m24 6 5 9 10 2-7 8 1 11-9-5-9 5 1-11-7-8 10-2z"/><path d="m19 24 3 3 7-8"/></svg>',
+    '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6 9 12v11c0 10 6 16 15 20 9-4 15-10 15-20V12z"/><path d="m17 24 5 5 10-11"/></svg>',
+    '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="13" width="34" height="25" rx="4"/><path d="m16 13 3-5h10l3 5"/><circle cx="24" cy="25.5" r="7"/><path d="M36 18h.01"/></svg>',
+  ];
+  document.querySelectorAll('.about-points article').forEach((article, index) => {
+    if (article.querySelector('.about-icon')) return;
+    const icon = document.createElement('span');
+    icon.className = 'about-icon';
+    icon.innerHTML = aboutIcons[index] || aboutIcons[0];
+    article.prepend(icon);
+  });
+
   const metaDescription = document.querySelector('meta[name="description"]');
   if (metaDescription) {
     metaDescription.content = '凯达装修 — 服务荷兰全境、德国和比利时的室内装修、木工、定制家具、衣柜与厨房工程。微信 / WhatsApp 快速咨询。';
@@ -87,12 +153,7 @@
   const form = document.getElementById('quoteForm');
   if (!form) return;
 
-  if (!document.querySelector('link[href="inquiry.css"]')) {
-    const stylesheet = document.createElement('link');
-    stylesheet.rel = 'stylesheet';
-    stylesheet.href = 'inquiry.css';
-    document.head.appendChild(stylesheet);
-  }
+  ensureStylesheet('inquiry.css');
 
   const status = document.getElementById('formStatus');
   const submitButton = form.querySelector('button[type="submit"]');
