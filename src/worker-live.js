@@ -11,7 +11,8 @@ export default {
     let response;
 
     if (url.pathname === "/api/site-content" && request.method === "GET") {
-      response = json({ ok: true, content: await loadSiteContent(env) });
+      const content = await loadSiteContent(env);
+      response = json({ ok: true, content: publicSiteContent(content) });
     } else if (url.pathname === "/api/admin/site-content" && request.method === "GET") {
       response = !requireAdmin(request, env)
         ? json({ ok: false, error: "Unauthorized" }, 401)
@@ -52,6 +53,47 @@ async function loadSiteContent(env) {
   } catch {
     return {};
   }
+}
+
+function publicSiteContent(content) {
+  const published = Array.isArray(content.projectLibrary)
+    ? content.projectLibrary
+        .filter((project) => project && project.published !== false)
+        .map(publicProject)
+    : [];
+  const publishedIds = new Set(published.map((project) => project.id).filter(Boolean));
+  const featuredIds = Array.isArray(content.featuredProjectIds)
+    ? content.featuredProjectIds.filter((id) => publishedIds.has(id)).slice(0, 6)
+    : [];
+  const featured = featuredIds
+    .map((id) => published.find((project) => project.id === id))
+    .filter(Boolean);
+
+  return {
+    hero: content.hero && typeof content.hero === "object" ? content.hero : {},
+    projects: featured.length
+      ? featured
+      : (Array.isArray(content.projects) ? content.projects.map(publicProject).slice(0, 6) : []),
+    beforeAfter: content.beforeAfter && typeof content.beforeAfter === "object" ? content.beforeAfter : {},
+    projectLibrary: published,
+    featuredProjectIds: featuredIds,
+  };
+}
+
+function publicProject(project) {
+  const images = Array.isArray(project?.images)
+    ? project.images.filter(Boolean).slice(0, 20)
+    : (project?.image ? [project.image] : []);
+  return {
+    id: clean(project?.id, 160),
+    title: clean(project?.title, 160),
+    city: clean(project?.city, 120),
+    category: clean(project?.category, 120),
+    description: clean(project?.description, 1600),
+    image: images[0] || clean(project?.image, 1000),
+    images,
+    createdAt: clean(project?.createdAt, 80),
+  };
 }
 
 async function saveSiteContent(env, content) {
