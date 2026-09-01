@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>凯达装修后台 · GitHub 验收版</title><link rel="stylesheet" href="admin.css"></head>
+<body>
+  <aside>
+    <div class="logo">凯达装修<small>管理后台</small></div>
+    <nav>
+      <a class="active">＋ 发布新工程</a>
+      <a>工程案例</a>
+      <a>客户询价 <b>3</b></a>
+      <a>首页精选</a>
+      <a>网站资料</a>
+      <a href="../index.html" target="_blank">查看网站 ↗</a>
+    </nav>
+  </aside>
+  <main>
+    <header><div><span>KAIDA ADMIN</span><h1>发布新工程</h1><p>照片、文字、短视频直接往里放。当前为 GitHub 验收模式；正式上线后接 Cloudflare D1 / R2。</p></div><button class="save">保存草稿</button></header>
+
+    <section class="card step">
+      <strong>1</strong>
+      <div>
+        <h2>上传工程照片</h2>
+        <p>一次选择多张，第一张默认作为封面。正式版支持拖动排序和“设为封面”。</p>
+        <label class="drop"><input type="file" multiple accept="image/*"><span>＋ 选择照片</span><small>JPG / PNG / HEIC · 自动压缩与生成 WebP/AVIF</small></label>
+      </div>
+    </section>
+
+    <section class="card step">
+      <strong>2</strong>
+      <div>
+        <h2>选择工程类型</h2>
+        <div class="chips"><label><input type="checkbox"> 装修</label><label><input type="checkbox"> 木工</label><label><input type="checkbox"> 定制家具</label><label><input type="checkbox"> 定制衣柜</label><label><input type="checkbox"> 厨房</label><label><input type="checkbox"> 其他</label></div>
+      </div>
+    </section>
+
+    <section class="card step">
+      <strong>3</strong>
+      <div class="formgrid">
+        <div class="full section-intro">
+          <h2>写几句话 <em>可不填</em></h2>
+          <p>这里就是给他随便打字的地方。不需要排版，写施工内容、材料、客户需求、做法都行。</p>
+        </div>
+        <label class="full">工程说明 <em>可不填</em>
+          <textarea class="story" rows="8" maxlength="2000" id="projectStory" placeholder="例如：这次是在 Den Haag 做的一套入墙衣柜。客户希望增加储物空间，同时保持客厅简洁。我们现场测量后按尺寸制作并完成安装……"></textarea>
+          <span class="counter"><b id="storyCount">0</b> / 2000</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="card step">
+      <strong>4</strong>
+      <div>
+        <h2>上传短视频 <em>可不填</em></h2>
+        <p>手机拍完可以直接上传。适合展示柜门开合、抽屉细节、灯光、施工过程和完工后的空间效果。</p>
+        <label class="drop video-drop">
+          <input id="videoInput" type="file" multiple accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm">
+          <span>＋ 选择短视频</span>
+          <small>MP4 / MOV / WebM · 建议单条 60 秒以内，最多 3 条</small>
+        </label>
+        <div class="video-previews" id="videoPreviews" aria-live="polite"></div>
+        <p class="hint">正式版上传后会自动压缩、生成网页播放格式和封面图；访客点开工程时可直接播放。</p>
+      </div>
+    </section>
+
+    <section class="card step">
+      <strong>5</strong>
+      <div class="formgrid">
+        <label>城市<input placeholder="例如：Den Haag"></label>
+        <label>工程名称 <em>可不填</em><input placeholder="不填将自动生成"></label>
+        <label>完成时间 <em>可不填</em><input type="month"></label>
+        <label class="toggle"><input type="checkbox"><span></span> 首页精选</label>
+      </div>
+    </section>
+
+    <section class="card" style="border-style:dashed"><p style="margin:0"><strong>验收模式：</strong> 当前页面用于确认后台操作是否够简单。照片/视频只在本机预览，发布按钮不会把内容公开给客户；Cloudflare 阶段再接真实数据库与文件存储。</p></section>
+
+    <section class="publish"><button id="publishBtn">发布工程</button><p id="status"></p></section>
+  </main>
+
+  <script>
+    const story = document.getElementById('projectStory');
+    const storyCount = document.getElementById('storyCount');
+    story.addEventListener('input', () => storyCount.textContent = story.value.length);
+
+    const videoInput = document.getElementById('videoInput');
+    const videoPreviews = document.getElementById('videoPreviews');
+    const objectUrls = [];
+
+    videoInput.addEventListener('change', () => {
+      objectUrls.splice(0).forEach(URL.revokeObjectURL);
+      videoPreviews.innerHTML = '';
+      const files = Array.from(videoInput.files || []).slice(0, 3);
+
+      if (!files.length) return;
+      files.forEach((file, index) => {
+        const url = URL.createObjectURL(file);
+        objectUrls.push(url);
+        const item = document.createElement('article');
+        item.className = 'video-preview';
+        item.innerHTML = `
+          <video src="${url}" controls preload="metadata"></video>
+          <div><strong>视频 ${index + 1}</strong><span>${file.name}</span><small>${(file.size / 1024 / 1024).toFixed(1)} MB</small></div>`;
+        videoPreviews.appendChild(item);
+      });
+
+      if ((videoInput.files || []).length > 3) {
+        const note = document.createElement('p');
+        note.className = 'limit-note';
+        note.textContent = '原型只预览前 3 条；正式版也会限制最多 3 条，避免项目页太重。';
+        videoPreviews.appendChild(note);
+      }
+    });
+
+    document.getElementById('publishBtn').onclick = () => {
+      document.getElementById('status').textContent = '原型：正式版发布后会自动生成项目页、压缩照片和短视频、更新案例库；填写的工程说明会直接出现在项目详情页，勾选“首页精选”则进入首页 6 个精选位置。';
+    };
+  </script>
+</body></html>
