@@ -8,6 +8,7 @@
     wechatId: 'linkailunLKL5566',
     wechatName: 'KaiLun / 凯伦',
     wechatArea: 'Rotterdam / 鹿特丹',
+    wechatUrl: 'https://u.wechat.com/kCozOqTzL7Mo8-3Khw6a9nM?s=2',
   };
 
   document.querySelectorAll('a[href="https://wa.me/31600000000"]').forEach((link) => {
@@ -20,6 +21,31 @@
     link.title = CONTACTS.email;
     if (link.textContent.trim() === 'Email') link.textContent = CONTACTS.email;
   });
+
+  const qrPlaceholder = document.querySelector('.qr-placeholder');
+  if (qrPlaceholder) {
+    qrPlaceholder.innerHTML = '';
+    const qrLink = document.createElement('a');
+    qrLink.href = CONTACTS.wechatUrl;
+    qrLink.target = '_blank';
+    qrLink.rel = 'noopener';
+    qrLink.title = '打开微信 / Open WeChat';
+    qrLink.style.display = 'block';
+    qrLink.style.width = '100%';
+    qrLink.style.height = '100%';
+
+    const qrImage = document.createElement('img');
+    qrImage.src = 'assets/wechat-qr.svg';
+    qrImage.alt = '凯达装修 KaiLun 微信二维码';
+    qrImage.loading = 'eager';
+    qrImage.style.display = 'block';
+    qrImage.style.width = '100%';
+    qrImage.style.height = '100%';
+    qrImage.style.objectFit = 'contain';
+
+    qrLink.appendChild(qrImage);
+    qrPlaceholder.appendChild(qrLink);
+  }
 
   const wechatId = document.getElementById('wechatId');
   if (wechatId) {
