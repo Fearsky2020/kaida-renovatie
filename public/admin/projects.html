@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>凯达装修后台 · 全部工程</title>
+  <link rel="stylesheet" href="projects.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><img src="../assets/kaida-mark.svg" alt=""><div><strong>凯达装修</strong><span>全部工程案例</span></div></div>
+    <nav><a href="./">首页管理</a><a class="active" href="projects.html">全部工程</a><a href="inquiries.html">客户询价</a><a href="../index.html" target="_blank" rel="noopener">打开网站 ↗</a></nav>
+  </header>
+  <main>
+    <section class="hero-row">
+      <div><h1>全部工程</h1><p>老项目都留在这里。想放到首页，就打开“首页精选”；取消精选也不会删除项目。</p></div>
+      <button class="primary" id="addProject">＋ 新增工程</button>
+    </section>
+    <section class="summary"><strong id="countText">正在读取…</strong><span>首页最多展示 6 个精选工程</span></section>
+    <div id="projectList" class="project-list"></div>
+  </main>
+
+  <dialog id="editorDialog">
+    <form method="dialog" class="dialog-card" id="projectForm">
+      <div class="dialog-head"><div><small>工程资料</small><h2 id="dialogTitle">新增工程</h2></div><button class="close" value="cancel" aria-label="关闭">×</button></div>
+      <input type="hidden" id="projectId">
+      <div class="image-box"><img id="projectPreview" alt="工程图片"><label>选择 / 更换图片<input id="projectImage" type="file" accept="image/*"></label><p id="uploadStatus"></p></div>
+      <div class="fields">
+        <label>工程标题<input id="projectTitle" maxlength="120" required placeholder="例如：餐馆整体翻新"></label>
+        <label>城市<input id="projectCity" maxlength="80" placeholder="例如：Rotterdam"></label>
+        <label>分类<select id="projectCategory"><option>全屋定制</option><option>室内翻新</option><option>餐馆装修</option><option>花园翻新</option><option>橱柜定制</option><option>卫浴翻新</option></select></label>
+        <label class="full">工程说明 <small>可不填</small><textarea id="projectDescription" rows="4" maxlength="1200" placeholder="简单写做了什么、客户需求、施工亮点……"></textarea></label>
+        <label class="toggle"><input id="projectPublished" type="checkbox" checked><span></span> 对外展示</label>
+        <label class="toggle"><input id="projectFeatured" type="checkbox"><span></span> 首页精选</label>
+      </div>
+      <div class="dialog-actions"><button class="danger" type="button" id="deleteProject">删除工程</button><div><button value="cancel">取消</button><button class="primary" type="button" id="saveProject">保存工程</button></div></div>
+      <p class="status" id="formStatus"></p>
+    </form>
+  </dialog>
+  <script src="projects.js"></script>
+</body>
+</html>
