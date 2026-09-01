@@ -21,7 +21,7 @@ const errors = [];
 for (const file of [
   'index.html','styles.css','script.js','backend.js','cms.js','brand-icons.css','mobile-focus.css',
   'admin/index.html','admin/homepage.js','admin/homepage.css','admin/dashboard.js','admin/dashboard.css','admin/mobile-admin.css',
-  'admin/projects.html','admin/projects.js','admin/projects.css','admin/inquiries.html','admin/inquiries.js','admin/admin.css'
+  'admin/project-photos.css','admin/admin-auth.js','admin/projects.html','admin/projects.js','admin/projects.css','admin/inquiries.html','admin/inquiries.js','admin/admin.css'
 ]) {
   if (!fs.existsSync(path.join(root, file))) errors.push(`Missing: public/${file}`);
 }
@@ -35,13 +35,13 @@ for (const m of css.matchAll(/url\(['"]?([^)\'"?#]+)['"]?\)/g)) {
 for (const token of ['langToggle','quoteForm','compareRange','wechatModal']) {
   if (!index.includes(token) || !js.includes(token)) errors.push(`Frontend wiring missing: ${token}`);
 }
-for (const token of ['首页内容','全部工程','homepage.js','projects.js','dashboard.js','客户询价','mobile-admin.css']) {
+for (const token of ['首页内容','全部工程','homepage.js','projects.js','dashboard.js','客户询价','mobile-admin.css','admin-auth.js']) {
   if (!admin.includes(token)) errors.push(`Unified admin wiring missing: ${token}`);
 }
 for (const token of ['/api/admin/media','/api/admin/site-content','data-upload','projectLibrary']) {
   if (!homepageAdmin.includes(token)) errors.push(`Homepage CMS admin capability missing: ${token}`);
 }
-for (const token of ['projectLibrary','featuredProjectIds','toggleFeatured','saveProject','cancelProject','closeProjectDialog','/api/admin/media']) {
+for (const token of ['projectLibrary','featuredProjectIds','toggleFeatured','saveProject','cancelProject','closeProjectDialog','/api/admin/media','MAX_PROJECT_PHOTOS']) {
   if (!projectsJs.includes(token)) errors.push(`Project library capability missing: ${token}`);
 }
 for (const token of ['data-admin-tab','data-admin-panel','KaidaProjects','KaidaHomepage']) {
@@ -63,7 +63,7 @@ for (const token of ['/api/inquiries','ADMIN_API_TOKEN','RESEND_API_KEY','WHATSA
 for (const token of ['/api/admin/media','/api/admin/site-content','CMS_MEDIA','/cms-media/']) {
   if (!workerPreview.includes(token)) errors.push(`CMS worker capability missing: ${token}`);
 }
-for (const token of ['客户询价','inquiries.js','管理员密钥','mobile-inquiry-nav']) {
+for (const token of ['客户询价','inquiries.js','后台密码','mobile-inquiry-nav','admin-auth.js']) {
   if (!inquiryAdmin.includes(token)) errors.push(`Inquiry admin wiring missing: ${token}`);
 }
 if (!backend.includes('/api/inquiries')) errors.push('Frontend does not submit to inquiry API');
@@ -72,4 +72,4 @@ if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
 }
-console.log('Kaida checks passed: bilingual frontend, mobile-first unified admin, project library, image upload hooks, inquiry API, and protected admin pages are wired.');
+console.log('Kaida checks passed: bilingual frontend, mobile-first unified admin, project library, multi-photo upload hooks, inquiry API, remembered admin login, and protected admin pages are wired.');
