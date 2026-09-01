@@ -1,14 +1,16 @@
 (() => {
+  const MAX_PROJECT_PHOTOS = 20;
   const listEl = document.getElementById('projectList');
   const countText = document.getElementById('countText');
   const dialog = document.getElementById('editorDialog');
   const formStatus = document.getElementById('formStatus');
-  const placeholder = document.getElementById('projectImagePlaceholder');
+  const photoGrid = document.getElementById('projectPhotoGrid');
+  const photoCount = document.getElementById('photoCount');
   if (!listEl || !dialog) return;
 
   let adminToken = sessionStorage.getItem('kaidaAdminToken') || '';
   let content = { hero:{}, projects:[], beforeAfter:{}, projectLibrary:[], featuredProjectIds:[] };
-  let localPreviewUrl = '';
+  let photoItems = [];
 
   const fields = {
     id: document.getElementById('projectId'),
@@ -20,7 +22,6 @@
     featured: document.getElementById('projectFeatured'),
     image: document.getElementById('projectImage'),
     camera: document.getElementById('projectCamera'),
-    preview: document.getElementById('projectPreview'),
     uploadStatus: document.getElementById('uploadStatus'),
   };
 
@@ -53,6 +54,12 @@
 
   function makeId(){ return `project-${Date.now().toString(36)}-${crypto.randomUUID().slice(0,6)}`; }
 
+  function projectImages(project){
+    const list = Array.isArray(project?.images) ? project.images.filter(Boolean) : [];
+    if(!list.length && project?.image) list.push(project.image);
+    return list.slice(0,MAX_PROJECT_PHOTOS);
+  }
+
   function normalize(){
     if(!Array.isArray(content.projectLibrary) || !content.projectLibrary.length){
       content.projectLibrary = (content.projects||[]).map((p,i)=>({
@@ -62,6 +69,7 @@
         category:p.category||'室内翻新',
         description:p.description||'',
         image:p.image||'',
+        images:Array.isArray(p.images)&&p.images.length?p.images:(p.image?[p.image]:[]),
         published:true,
         createdAt:new Date(Date.now()-i*1000).toISOString(),
       }));
@@ -69,7 +77,10 @@
     if(!Array.isArray(content.featuredProjectIds) || !content.featuredProjectIds.length){
       content.featuredProjectIds = content.projectLibrary.slice(0,6).map(p=>p.id);
     }
-    content.projectLibrary = content.projectLibrary.map(p=>({ published:p.published!==false, ...p }));
+    content.projectLibrary = content.projectLibrary.map(p=>{
+      const images=projectImages(p);
+      return { published:p.published!==false, ...p, images, image:images[0]||p.image||'' };
+    });
     syncFeaturedSnapshots();
   }
 
@@ -85,6 +96,7 @@
       city:p.city,
       category:p.category,
       image:p.image,
+      images:projectImages(p),
       description:p.description||'',
     }));
   }
@@ -107,14 +119,15 @@
     }
     listEl.innerHTML = lib.map(p=>{
       const featured = content.featuredProjectIds.includes(p.id);
-      const image = p.image
-        ? `<img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.title||'工程图片')}">`
+      const images = projectImages(p);
+      const image = images[0]
+        ? `<img src="${escapeHtml(images[0])}" alt="${escapeHtml(p.title||'工程图片')}">`
         : '<div class="project-row-placeholder">暂无图片</div>';
       return `<article class="project-row" data-id="${escapeHtml(p.id)}">
         ${image}
         <div class="project-main">
           <h2>${escapeHtml(p.title||'未命名工程')}</h2>
-          <p>${escapeHtml(p.city||'未填城市')}${p.category?` · ${escapeHtml(p.category)}`:''}</p>
+          <p>${escapeHtml(p.city||'未填城市')}${p.category?` · ${escapeHtml(p.category)}`:''}${images.length?` · ${images.length} 张照片`:''}</p>
           <div class="badges">${featured?'<span class="badge featured">首页精选</span>':''}${p.published===false?'<span class="badge hidden">已隐藏</span>':'<span class="badge">对外展示</span>'}</div>
         </div>
         <div class="project-actions">
@@ -127,25 +140,49 @@
     listEl.querySelectorAll('[data-feature]').forEach(b=>b.addEventListener('click',()=>toggleFeatured(b.dataset.feature)));
   }
 
-  function clearLocalPreview(){
-    if(localPreviewUrl){ URL.revokeObjectURL(localPreviewUrl); localPreviewUrl=''; }
+  function releasePhotoItems(){
+    photoItems.forEach(item=>{ if(item.kind==='file'&&item.preview) URL.revokeObjectURL(item.preview); });
+    photoItems=[];
   }
 
-  function setPreview(src=''){
-    clearLocalPreview();
-    if(src){
-      fields.preview.src=src;
-      fields.preview.hidden=false;
-      placeholder.hidden=true;
-    }else{
-      fields.preview.removeAttribute('src');
-      fields.preview.hidden=true;
-      placeholder.hidden=false;
+  function renderPhotoGrid(){
+    if(photoCount) photoCount.textContent=`${photoItems.length} / ${MAX_PROJECT_PHOTOS} 张`;
+    if(!photoGrid) return;
+    if(!photoItems.length){
+      photoGrid.innerHTML='<div class="project-photo-empty">还没添加照片</div>';
+      return;
     }
+    photoGrid.innerHTML=photoItems.map((item,index)=>{
+      const src=item.kind==='url'?item.url:item.preview;
+      return `<article class="project-photo-item" data-photo-index="${index}">
+        <img src="${escapeHtml(src)}" alt="工程照片 ${index+1}">
+        ${index===0?'<span class="cover-badge">封面</span>':''}
+        <div class="project-photo-actions">
+          ${index===0?'':'<button type="button" data-cover>设封面</button>'}
+          <button type="button" data-remove>删除</button>
+        </div>
+      </article>`;
+    }).join('');
+    photoGrid.querySelectorAll('[data-cover]').forEach(btn=>btn.addEventListener('click',()=>{
+      const item=btn.closest('[data-photo-index]');
+      const index=Number(item?.dataset.photoIndex);
+      if(!Number.isInteger(index)||index<=0)return;
+      const [picked]=photoItems.splice(index,1);
+      photoItems.unshift(picked);
+      renderPhotoGrid();
+    }));
+    photoGrid.querySelectorAll('[data-remove]').forEach(btn=>btn.addEventListener('click',()=>{
+      const item=btn.closest('[data-photo-index]');
+      const index=Number(item?.dataset.photoIndex);
+      if(!Number.isInteger(index))return;
+      const [removed]=photoItems.splice(index,1);
+      if(removed?.kind==='file'&&removed.preview) URL.revokeObjectURL(removed.preview);
+      renderPhotoGrid();
+    }));
   }
 
   function resetForm(){
-    clearLocalPreview();
+    releasePhotoItems();
     fields.id.value='';
     fields.title.value='';
     fields.city.value='';
@@ -155,9 +192,9 @@
     fields.featured.checked=false;
     fields.image.value='';
     if(fields.camera) fields.camera.value='';
-    fields.uploadStatus.textContent='照片会自动压缩成适合网站的大小再上传。';
+    fields.uploadStatus.textContent='一次可以选很多张，也可以之后继续追加。最多 20 张。';
     formStatus.textContent='';
-    setPreview('');
+    renderPhotoGrid();
     document.getElementById('deleteProject').hidden=true;
     document.getElementById('dialogTitle').textContent='新增工程';
   }
@@ -174,7 +211,8 @@
       fields.description.value=p.description||'';
       fields.published.checked=p.published!==false;
       fields.featured.checked=content.featuredProjectIds.includes(p.id);
-      setPreview(p.image||'');
+      photoItems=projectImages(p).map(url=>({kind:'url',url}));
+      renderPhotoGrid();
       document.getElementById('deleteProject').hidden=false;
       document.getElementById('dialogTitle').textContent='编辑工程';
     }
@@ -182,38 +220,42 @@
   }
 
   function closeEditor(){
-    clearLocalPreview();
+    releasePhotoItems();
     formStatus.textContent='';
     if(dialog.open) dialog.close();
   }
 
-  function selectedImageFile(){
-    return fields.camera?.files?.[0] || fields.image?.files?.[0] || null;
+  function addFiles(files, source='相册'){
+    const incoming=Array.from(files||[]).filter(Boolean);
+    if(!incoming.length)return;
+    const room=MAX_PROJECT_PHOTOS-photoItems.length;
+    if(room<=0){ fields.uploadStatus.textContent='已经有 20 张了，请先删除一些。'; return; }
+    const accepted=incoming.slice(0,room);
+    accepted.forEach(file=>photoItems.push({kind:'file',file,preview:URL.createObjectURL(file)}));
+    fields.uploadStatus.textContent=`已从${source}加入 ${accepted.length} 张${incoming.length>accepted.length?'，超过 20 张的部分没有加入。':''}`;
+    renderPhotoGrid();
+    fields.image.value='';
+    if(fields.camera) fields.camera.value='';
   }
 
-  function previewSelected(file, source){
-    if(!file) return;
-    if(source==='camera' && fields.image) fields.image.value='';
-    if(source==='image' && fields.camera) fields.camera.value='';
-    clearLocalPreview();
-    localPreviewUrl=URL.createObjectURL(file);
-    fields.preview.src=localPreviewUrl;
-    fields.preview.hidden=false;
-    placeholder.hidden=true;
-    fields.uploadStatus.textContent=`已选择：${file.name || '手机照片'} · ${window.KaidaImage?.formatBytes?.(file.size) || ''}`;
-  }
-
-  async function uploadImageFor(projectId,file){
-    if(!file) return '';
-    fields.uploadStatus.textContent='正在处理照片…';
-    const prepared = await (window.KaidaImage?.prepare?.(file) || Promise.resolve(file));
-    fields.uploadStatus.textContent=`正在上传… ${window.KaidaImage?.formatBytes?.(prepared.size) || ''}`;
+  async function uploadOne(projectId,item,index,total){
+    if(item.kind==='url') return item.url;
+    fields.uploadStatus.textContent=`正在处理并上传第 ${index+1}/${total} 张…`;
+    const prepared=await (window.KaidaImage?.prepare?.(item.file)||Promise.resolve(item.file));
     const data=new FormData();
     data.set('slot',`library-${projectId}`);
-    data.set('file',prepared,prepared.name || 'photo.jpg');
+    data.set('file',prepared,prepared.name||`photo-${index+1}.jpg`);
     const result=await api('/api/admin/media',{method:'POST',body:data});
-    fields.uploadStatus.textContent='✓ 图片已上传并永久保存';
     return result.url;
+  }
+
+  async function uploadAll(projectId){
+    const urls=[];
+    for(let i=0;i<photoItems.length;i+=1){
+      urls.push(await uploadOne(projectId,photoItems[i],i,photoItems.length));
+    }
+    fields.uploadStatus.textContent=`✓ ${urls.length} 张照片已永久保存`;
+    return urls;
   }
 
   async function saveProject(){
@@ -229,10 +271,8 @@
     try{
       const isNew=!fields.id.value;
       const id=fields.id.value||makeId();
-      let current=content.projectLibrary.find(p=>p.id===id)||{id,createdAt:new Date().toISOString(),image:''};
-      let image=current.image||'';
-      const pickedFile = selectedImageFile();
-      if(pickedFile) image=await uploadImageFor(id,pickedFile);
+      let current=content.projectLibrary.find(p=>p.id===id)||{id,createdAt:new Date().toISOString(),image:'',images:[]};
+      const images=await uploadAll(id);
       current={
         ...current,
         id,
@@ -241,7 +281,8 @@
         category:fields.category.value,
         description:fields.description.value.trim(),
         published:fields.published.checked,
-        image,
+        images,
+        image:images[0]||'',
       };
       if(isNew) content.projectLibrary.unshift(current);
       else content.projectLibrary=content.projectLibrary.map(p=>p.id===id?current:p);
@@ -297,6 +338,51 @@
     }catch(error){ formStatus.textContent=`删除失败：${error.message}`; }
   }
 
+  function stopStream(stream){
+    try{ stream?.getTracks?.().forEach(track=>track.stop()); }catch{}
+  }
+
+  async function openCamera(){
+    fields.uploadStatus.textContent='正在打开相机…';
+    if(!navigator.mediaDevices?.getUserMedia){
+      fields.uploadStatus.textContent='当前浏览器不支持网页相机，正在调用系统相机…';
+      fields.camera?.click();
+      return;
+    }
+    let stream;
+    try{
+      stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+      const overlay=document.createElement('div');
+      overlay.className='kaida-camera-overlay';
+      overlay.innerHTML='<div class="kaida-camera-card"><video playsinline autoplay></video><div class="kaida-camera-controls"><button type="button" data-cancel>取消</button><button class="primary" type="button" data-shot>拍照</button></div></div>';
+      document.body.appendChild(overlay);
+      const video=overlay.querySelector('video');
+      video.srcObject=stream;
+      await video.play();
+      const close=()=>{stopStream(stream);overlay.remove();};
+      overlay.querySelector('[data-cancel]').addEventListener('click',close);
+      overlay.querySelector('[data-shot]').addEventListener('click',()=>{
+        const width=video.videoWidth||1280;
+        const height=video.videoHeight||960;
+        const canvas=document.createElement('canvas');
+        canvas.width=width;canvas.height=height;
+        canvas.getContext('2d').drawImage(video,0,0,width,height);
+        canvas.toBlob(blob=>{
+          if(blob){
+            const file=new File([blob],`kaida-${Date.now()}.jpg`,{type:'image/jpeg',lastModified:Date.now()});
+            addFiles([file],'相机');
+          }
+          close();
+        },'image/jpeg',0.9);
+      });
+    }catch(error){
+      stopStream(stream);
+      console.warn('Camera API unavailable',error);
+      fields.uploadStatus.textContent='这个内置浏览器没有给网页相机权限；可以直接用“从相册多选”。';
+      fields.camera?.click();
+    }
+  }
+
   async function init(){
     listEl.innerHTML='<div class="projects-empty">正在读取工程案例…</div>';
     try{
@@ -316,10 +402,11 @@
   document.getElementById('deleteProject')?.addEventListener('click',deleteCurrent);
   document.getElementById('cancelProject')?.addEventListener('click',closeEditor);
   document.getElementById('closeProjectDialog')?.addEventListener('click',closeEditor);
+  document.getElementById('openCamera')?.addEventListener('click',openCamera);
   dialog.addEventListener('click',(event)=>{ if(event.target===dialog) closeEditor(); });
 
-  fields.image?.addEventListener('change',()=>previewSelected(fields.image.files?.[0], 'image'));
-  fields.camera?.addEventListener('change',()=>previewSelected(fields.camera.files?.[0], 'camera'));
+  fields.image?.addEventListener('change',()=>addFiles(fields.image.files,'相册'));
+  fields.camera?.addEventListener('change',()=>addFiles(fields.camera.files,'相机'));
 
   window.KaidaProjects = { reload:init };
   init();
