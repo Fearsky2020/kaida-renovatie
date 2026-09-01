@@ -1,0 +1,20 @@
+# Copy to .dev.vars for local Wrangler development. Never commit real secrets.
+ADMIN_API_TOKEN=replace-with-a-long-random-token
+
+# Email notifications via Resend
+RESEND_API_KEY=re_xxxxxxxxx
+NOTIFY_EMAIL=owner@example.nl
+FROM_EMAIL=Kaida <website@example.nl>
+ADMIN_URL=http://localhost:8787/admin/inquiries.html
+
+# Optional WhatsApp Business notification to the owner
+WHATSAPP_ENABLED=false
+WHATSAPP_API_VERSION=vXX.X
+WHATSAPP_ACCESS_TOKEN=replace-me
+WHATSAPP_PHONE_NUMBER_ID=replace-me
+WHATSAPP_NOTIFY_TO=31600000000
+WHATSAPP_TEMPLATE_NAME=kaida_new_inquiry
+WHATSAPP_TEMPLATE_LANG=zh_CN
+
+# Optional Enterprise WeChat / WeCom group robot webhook
+WECHAT_WORK_WEBHOOK_URL=
