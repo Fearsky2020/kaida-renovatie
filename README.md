@@ -1,33 +1,27 @@
 # 凯达装修 / Kaida Renovatie & Maatwerk
 
-凯达装修官网的 GitHub 验收仓库。目标是先在 GitHub 把前台视觉、双语体验和“傻瓜式后台”确认好，再连接 Cloudflare 自动部署。
+凯达装修官网。GitHub 是当前源码真相源，Cloudflare Workers Builds 已连接 `main` 分支，用于自动部署到已认领的 Worker `kaida-renovatie-preview`。
 
-## 当前可验收
+## 当前功能
 
 - 中文 / 荷兰语切换
 - 响应式前台
-- 6 个精选工程卡片
-- Before / After 拖动对比
-- 微信 / WhatsApp / 报价入口 UI
-- 后台：照片选择、工程类型、自由文字、短视频预览、城市/名称/月份、首页精选
-- GitHub Actions 自动做静态结构检查
+- 首页精选工程展示与 Before / After 对比
+- 新版凯达 Logo、服务图标与优势图标
+- 服务范围：荷兰全境、德国、比利时
+- 微信 / WhatsApp / 邮件真实联系方式
+- 客户询价表单与后台询价管理
+- 正式架构预留 D1（询价数据）+ R2（照片/短视频）
+- GitHub Actions 自动做结构和业务逻辑检查
 
-## 现在仍是演示模式
+## 联系方式
 
-- 报价表单不会真正发送
-- 后台“发布工程”不会真正公开内容
-- 微信、WhatsApp、邮箱仍需换成凯达真实资料
-- 真正持久化将在 Cloudflare 阶段用 D1（数据）+ R2（照片/短视频）实现
+- Email: `kailunlin0824@gmail.com`
+- Phone / WhatsApp: `+31 6 2119 1341`
+- WeChat: `linkailunLKL5566`
 
-## 本地预览
+## Cloudflare
 
-```bash
-python3 -m http.server 8765 -d public
-```
+生产同步目标 Worker：`kaida-renovatie-preview`。
 
-打开 `http://localhost:8765/`。
-后台：`http://localhost:8765/admin/`。
-
-## Cloudflare 目标结构
-
-项目已经带 `wrangler.toml`，Worker 名固定为 `kaida-renovatie`。最终连接 GitHub 到 Cloudflare Workers Builds 后，每次 push 可自动构建/部署；后续再增加 D1、R2 和后台鉴权。
+Cloudflare Workers Builds 已连接仓库 `Fearsky2020/kaida-renovatie` 的 `main` 分支；后续 push 到 `main` 应自动触发构建和部署。
