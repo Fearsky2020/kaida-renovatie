@@ -63,10 +63,13 @@ jobs:
           echo "CLAIM_ENCRYPTED=$CLAIM_ENCRYPTED"
           echo "ADMIN_ENCRYPTED=$ADMIN_ENCRYPTED"
 
-          echo 'Checking real Cloudflare deployment...'
-          curl --fail --silent --show-error "$PREVIEW_URL/index.html" >/dev/null
+          echo 'Waiting for temporary deployment propagation...'
+          sleep 5
 
-          RESPONSE="$(curl --fail --silent --show-error -X POST "$PREVIEW_URL/api/inquiries" \
+          echo 'Checking real Cloudflare deployment...'
+          curl --retry 10 --retry-delay 2 --retry-all-errors --fail --silent --show-error "$PREVIEW_URL/index.html" >/dev/null
+
+          RESPONSE="$(curl --retry 10 --retry-delay 2 --retry-all-errors --fail --silent --show-error -X POST "$PREVIEW_URL/api/inquiries" \
             -H 'Accept: application/json' \
             -F 'name=Cloudflare Preview Test' \
             -F 'city=Rotterdam' \
@@ -77,6 +80,6 @@ jobs:
             -F 'consent=yes')"
           echo "$RESPONSE" | grep -q '"ok":true'
 
-          LIST="$(curl --fail --silent --show-error "$PREVIEW_URL/api/inquiries?limit=5" -H "Authorization: Bearer $ADMIN_TOKEN")"
+          LIST="$(curl --retry 10 --retry-delay 2 --retry-all-errors --fail --silent --show-error "$PREVIEW_URL/api/inquiries?limit=5" -H "Authorization: Bearer $ADMIN_TOKEN")"
           echo "$LIST" | grep -q 'Cloudflare Preview Test'
           echo 'REAL_CLOUDFLARE_SMOKE_TEST=PASS'
