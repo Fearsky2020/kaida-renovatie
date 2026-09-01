@@ -3,10 +3,13 @@
   const heroMedia = document.querySelector('.hero-media');
   const before = document.querySelector('.compare-before');
   const after = document.querySelector('.compare-after');
+  const allProjectsLink = document.querySelector('.center-actions .text-link');
   let visibleProjects = [];
   let lightbox = null;
   let activeProject = null;
   let activePhoto = 0;
+
+  if (allProjectsLink) allProjectsLink.href = 'projects.html';
 
   if (!document.querySelector('link[href="project-gallery.css"]')) {
     const link = document.createElement('link');
