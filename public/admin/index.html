@@ -2,12 +2,13 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>凯达装修后台</title>
   <link rel="stylesheet" href="homepage.css">
   <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="mobile-admin.css">
 </head>
-<body>
+<body class="admin-dashboard-page">
   <div class="admin-shell">
     <header class="admin-top">
       <div class="brandline">
@@ -34,7 +35,7 @@
             <h1>首页内容</h1>
             <p>首页大图、6 个精选工程、改造前后，都在这里直接改。</p>
           </div>
-          <div class="tip">想增加第 7、8、9 个工程，不要覆盖旧图，直接点上面的“全部工程”。</div>
+          <div class="tip">手机现场拍完照片也能直接上传。想增加第 7、8、9 个工程，不要覆盖旧图，切到“全部工程”。</div>
         </div>
         <div id="editorRoot"></div>
       </section>
@@ -78,8 +79,8 @@
           <img id="projectPreview" alt="工程图片" hidden>
         </div>
         <div>
-          <label class="project-image-picker">选择 / 更换图片<input id="projectImage" type="file" accept="image/*"></label>
-          <p id="uploadStatus"></p>
+          <label class="project-image-picker">拍照 / 从相册选择<input id="projectImage" type="file" accept="image/*"></label>
+          <p id="uploadStatus">手机会自动提供相机或相册选项。</p>
         </div>
       </div>
 
