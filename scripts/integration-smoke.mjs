@@ -9,6 +9,9 @@ class MockDB {
       params: [],
       bind(...params){ this.params=params; return this; },
       async run(){
+        if (sql.includes('CREATE TABLE IF NOT EXISTS inquiries') || sql.includes('CREATE INDEX IF NOT EXISTS')) {
+          return {meta:{changes:0}};
+        }
         if (sql.includes('INSERT INTO inquiries')) {
           const [id, created_at, name, city, contact, email, project_type, message, language, consent, photo_keys, source, user_agent] = this.params;
           db.rows.set(id,{id,created_at,name,city,contact,email,project_type,message,language,consent,status:'new',photo_keys,source,user_agent});
