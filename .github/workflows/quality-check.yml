@@ -4,10 +4,17 @@ on:
   push:
   pull_request:
 
+concurrency:
+  group: kaida-site-check-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
+      - name: Debounce rapid pushes
+        if: github.event_name == 'push'
+        run: sleep 30
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
