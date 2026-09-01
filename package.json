@@ -1,10 +1,15 @@
 {
   "name": "kaida-renovatie",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "凯达装修 / Kaida Renovatie & Maatwerk website",
   "scripts": {
-    "check": "node scripts/check.mjs",
-    "preview": "python3 -m http.server 8765 -d public"
+    "check": "node --check src/worker.js && node --check public/backend.js && node --check public/admin/inquiries.js && node scripts/check.mjs",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "preview:static": "python3 -m http.server 8765 -d public"
+  },
+  "devDependencies": {
+    "wrangler": "^4.45.0"
   }
 }
