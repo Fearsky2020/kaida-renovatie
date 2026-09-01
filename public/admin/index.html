@@ -23,7 +23,7 @@
 
       <div class="top-actions">
         <a href="inquiries.html">客户询价</a>
-        <button id="changeToken" type="button">更换密钥</button>
+        <button id="changeToken" type="button">更换管理员密码</button>
         <a class="primary" href="../index.html" target="_blank" rel="noopener">打开网站 ↗</a>
       </div>
     </header>
@@ -104,8 +104,9 @@
     </form>
   </dialog>
 
-  <script src="homepage.js"></script>
+  <!-- 工程模块先启动并读取密码，首页模块随后复用同一份 sessionStorage，避免双弹窗。 -->
   <script src="projects.js"></script>
+  <script src="homepage.js"></script>
   <script src="dashboard.js"></script>
 </body>
 </html>
