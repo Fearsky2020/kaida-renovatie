@@ -15,4 +15,6 @@ binding = "MEDIA"
 
 [vars]
 MAX_UPLOAD_MB = "8"
+NOTIFY_EMAIL = "kailunlin0824@gmail.com"
 WHATSAPP_ENABLED = "false"
+WHATSAPP_NOTIFY_TO = "31621191341"
