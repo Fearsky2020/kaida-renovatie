@@ -21,7 +21,6 @@
     published: document.getElementById('projectPublished'),
     featured: document.getElementById('projectFeatured'),
     image: document.getElementById('projectImage'),
-    camera: document.getElementById('projectCamera'),
     uploadStatus: document.getElementById('uploadStatus'),
   };
 
@@ -54,10 +53,20 @@
 
   function makeId(){ return `project-${Date.now().toString(36)}-${crypto.randomUUID().slice(0,6)}`; }
 
+  function uniqueUrls(values){
+    const seen=new Set();
+    return (values||[]).filter(Boolean).filter(url=>{
+      const key=String(url);
+      if(seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).slice(0,MAX_PROJECT_PHOTOS);
+  }
+
   function projectImages(project){
-    const list = Array.isArray(project?.images) ? project.images.filter(Boolean) : [];
-    if(!list.length && project?.image) list.push(project.image);
-    return list.slice(0,MAX_PROJECT_PHOTOS);
+    const list = Array.isArray(project?.images) ? project.images : [];
+    const combined = list.length ? list : (project?.image ? [project.image] : []);
+    return uniqueUrls(combined);
   }
 
   function normalize(){
@@ -79,7 +88,7 @@
     }
     content.projectLibrary = content.projectLibrary.map(p=>{
       const images=projectImages(p);
-      return { published:p.published!==false, ...p, images, image:images[0]||p.image||'' };
+      return { published:p.published!==false, ...p, images, image:images[0]||'' };
     });
     syncFeaturedSnapshots();
   }
@@ -140,9 +149,24 @@
     listEl.querySelectorAll('[data-feature]').forEach(b=>b.addEventListener('click',()=>toggleFeatured(b.dataset.feature)));
   }
 
-  function releasePhotoItems(){
-    photoItems.forEach(item=>{ if(item.kind==='file'&&item.preview) URL.revokeObjectURL(item.preview); });
+  function revokeItem(item){
+    if(item?.kind==='file'&&item.preview){
+      try{ URL.revokeObjectURL(item.preview); }catch{}
+    }
+  }
+
+  function clearAllPhotoItems(){
+    photoItems.forEach(revokeItem);
     photoItems=[];
+  }
+
+  function clearPendingFiles(){
+    photoItems.filter(item=>item.kind==='file').forEach(revokeItem);
+    photoItems=photoItems.filter(item=>item.kind==='url');
+  }
+
+  function fileKey(file){
+    return [file?.name||'',file?.size||0,file?.lastModified||0,file?.type||''].join('|');
   }
 
   function renderPhotoGrid(){
@@ -163,26 +187,28 @@
         </div>
       </article>`;
     }).join('');
+
     photoGrid.querySelectorAll('[data-cover]').forEach(btn=>btn.addEventListener('click',()=>{
-      const item=btn.closest('[data-photo-index]');
-      const index=Number(item?.dataset.photoIndex);
+      const row=btn.closest('[data-photo-index]');
+      const index=Number(row?.dataset.photoIndex);
       if(!Number.isInteger(index)||index<=0)return;
       const [picked]=photoItems.splice(index,1);
       photoItems.unshift(picked);
       renderPhotoGrid();
     }));
+
     photoGrid.querySelectorAll('[data-remove]').forEach(btn=>btn.addEventListener('click',()=>{
-      const item=btn.closest('[data-photo-index]');
-      const index=Number(item?.dataset.photoIndex);
+      const row=btn.closest('[data-photo-index]');
+      const index=Number(row?.dataset.photoIndex);
       if(!Number.isInteger(index))return;
       const [removed]=photoItems.splice(index,1);
-      if(removed?.kind==='file'&&removed.preview) URL.revokeObjectURL(removed.preview);
+      revokeItem(removed);
       renderPhotoGrid();
     }));
   }
 
   function resetForm(){
-    releasePhotoItems();
+    clearAllPhotoItems();
     fields.id.value='';
     fields.title.value='';
     fields.city.value='';
@@ -191,8 +217,7 @@
     fields.published.checked=true;
     fields.featured.checked=false;
     fields.image.value='';
-    if(fields.camera) fields.camera.value='';
-    fields.uploadStatus.textContent='一次可以选很多张，也可以之后继续追加。最多 20 张。';
+    fields.uploadStatus.textContent='一次选几张就显示几张。再次选择会替换本次尚未保存的照片，不会越叠越多。';
     formStatus.textContent='';
     renderPhotoGrid();
     document.getElementById('deleteProject').hidden=true;
@@ -213,6 +238,7 @@
       fields.featured.checked=content.featuredProjectIds.includes(p.id);
       photoItems=projectImages(p).map(url=>({kind:'url',url}));
       renderPhotoGrid();
+      fields.uploadStatus.textContent='已保存的照片会保留；再次选择只替换本次还没保存的新照片。';
       document.getElementById('deleteProject').hidden=false;
       document.getElementById('dialogTitle').textContent='编辑工程';
     }
@@ -220,22 +246,43 @@
   }
 
   function closeEditor(){
-    releasePhotoItems();
+    clearAllPhotoItems();
+    if(fields.image) fields.image.value='';
     formStatus.textContent='';
     if(dialog.open) dialog.close();
   }
 
-  function addFiles(files, source='相册'){
+  function selectFiles(files){
     const incoming=Array.from(files||[]).filter(Boolean);
-    if(!incoming.length)return;
+    if(!incoming.length) return;
+
+    // Keep already-saved photos, but replace the current unsaved batch.
+    clearPendingFiles();
+
+    const existingFileKeys=new Set();
+    const deduped=[];
+    for(const file of incoming){
+      const key=fileKey(file);
+      if(existingFileKeys.has(key)) continue;
+      existingFileKeys.add(key);
+      deduped.push(file);
+    }
+
     const room=MAX_PROJECT_PHOTOS-photoItems.length;
-    if(room<=0){ fields.uploadStatus.textContent='已经有 20 张了，请先删除一些。'; return; }
-    const accepted=incoming.slice(0,room);
-    accepted.forEach(file=>photoItems.push({kind:'file',file,preview:URL.createObjectURL(file)}));
-    fields.uploadStatus.textContent=`已从${source}加入 ${accepted.length} 张${incoming.length>accepted.length?'，超过 20 张的部分没有加入。':''}`;
+    const accepted=deduped.slice(0,Math.max(0,room));
+    accepted.forEach(file=>photoItems.push({kind:'file',file,preview:URL.createObjectURL(file),key:fileKey(file)}));
     renderPhotoGrid();
+
+    if(!accepted.length){
+      fields.uploadStatus.textContent=room<=0?'已经有 20 张了，请先删除一些。':'没有加入重复照片。';
+    }else{
+      const duplicateCount=incoming.length-deduped.length;
+      const overflowCount=Math.max(0,deduped.length-accepted.length);
+      fields.uploadStatus.textContent=`已选择 ${accepted.length} 张${duplicateCount?`，自动忽略 ${duplicateCount} 张重复照片`:''}${overflowCount?`，另有 ${overflowCount} 张超过 20 张上限`:''}`;
+    }
+
+    // Clear the input value so picking the same photo again still fires change.
     fields.image.value='';
-    if(fields.camera) fields.camera.value='';
   }
 
   async function uploadOne(projectId,item,index,total){
@@ -254,13 +301,14 @@
     for(let i=0;i<photoItems.length;i+=1){
       urls.push(await uploadOne(projectId,photoItems[i],i,photoItems.length));
     }
-    fields.uploadStatus.textContent=`✓ ${urls.length} 张照片已永久保存`;
-    return urls;
+    const unique=uniqueUrls(urls);
+    fields.uploadStatus.textContent=`✓ ${unique.length} 张照片已永久保存`;
+    return unique;
   }
 
   async function saveProject(){
     formStatus.textContent='';
-    const title = fields.title.value.trim();
+    const title=fields.title.value.trim();
     if(!title){
       formStatus.textContent='请先写一个工程标题。';
       fields.title.focus();
@@ -284,6 +332,7 @@
         images,
         image:images[0]||'',
       };
+
       if(isNew) content.projectLibrary.unshift(current);
       else content.projectLibrary=content.projectLibrary.map(p=>p.id===id?current:p);
 
@@ -338,51 +387,6 @@
     }catch(error){ formStatus.textContent=`删除失败：${error.message}`; }
   }
 
-  function stopStream(stream){
-    try{ stream?.getTracks?.().forEach(track=>track.stop()); }catch{}
-  }
-
-  async function openCamera(){
-    fields.uploadStatus.textContent='正在打开相机…';
-    if(!navigator.mediaDevices?.getUserMedia){
-      fields.uploadStatus.textContent='当前浏览器不支持网页相机，正在调用系统相机…';
-      fields.camera?.click();
-      return;
-    }
-    let stream;
-    try{
-      stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
-      const overlay=document.createElement('div');
-      overlay.className='kaida-camera-overlay';
-      overlay.innerHTML='<div class="kaida-camera-card"><video playsinline autoplay></video><div class="kaida-camera-controls"><button type="button" data-cancel>取消</button><button class="primary" type="button" data-shot>拍照</button></div></div>';
-      document.body.appendChild(overlay);
-      const video=overlay.querySelector('video');
-      video.srcObject=stream;
-      await video.play();
-      const close=()=>{stopStream(stream);overlay.remove();};
-      overlay.querySelector('[data-cancel]').addEventListener('click',close);
-      overlay.querySelector('[data-shot]').addEventListener('click',()=>{
-        const width=video.videoWidth||1280;
-        const height=video.videoHeight||960;
-        const canvas=document.createElement('canvas');
-        canvas.width=width;canvas.height=height;
-        canvas.getContext('2d').drawImage(video,0,0,width,height);
-        canvas.toBlob(blob=>{
-          if(blob){
-            const file=new File([blob],`kaida-${Date.now()}.jpg`,{type:'image/jpeg',lastModified:Date.now()});
-            addFiles([file],'相机');
-          }
-          close();
-        },'image/jpeg',0.9);
-      });
-    }catch(error){
-      stopStream(stream);
-      console.warn('Camera API unavailable',error);
-      fields.uploadStatus.textContent='这个内置浏览器没有给网页相机权限；可以直接用“从相册多选”。';
-      fields.camera?.click();
-    }
-  }
-
   async function init(){
     listEl.innerHTML='<div class="projects-empty">正在读取工程案例…</div>';
     try{
@@ -402,12 +406,10 @@
   document.getElementById('deleteProject')?.addEventListener('click',deleteCurrent);
   document.getElementById('cancelProject')?.addEventListener('click',closeEditor);
   document.getElementById('closeProjectDialog')?.addEventListener('click',closeEditor);
-  document.getElementById('openCamera')?.addEventListener('click',openCamera);
   dialog.addEventListener('click',(event)=>{ if(event.target===dialog) closeEditor(); });
 
-  fields.image?.addEventListener('change',()=>addFiles(fields.image.files,'相册'));
-  fields.camera?.addEventListener('change',()=>addFiles(fields.camera.files,'相机'));
+  fields.image?.addEventListener('change',()=>selectFiles(fields.image.files));
 
-  window.KaidaProjects = { reload:init };
+  window.KaidaProjects={reload:init};
   init();
 })();
