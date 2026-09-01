@@ -6,7 +6,7 @@
   <title>凯达装修后台</title>
   <link rel="stylesheet" href="homepage.css">
   <link rel="stylesheet" href="dashboard.css">
-  <link rel="stylesheet" href="project-photos.css">
+  <link rel="stylesheet" href="project-photos.css?v=20260901-1715">
   <link rel="stylesheet" href="mobile-admin.css">
 </head>
 <body class="admin-dashboard-page">
@@ -82,14 +82,12 @@
         <div id="projectPhotoGrid" class="project-photo-grid">
           <div class="project-photo-empty">还没添加照片</div>
         </div>
-        <div class="project-image-actions">
-          <button class="project-image-picker" type="button" id="openCamera">📷 现场拍照</button>
-          <label class="project-image-picker">🖼 从相册多选
+        <div class="project-image-actions single-picker">
+          <label class="project-image-picker">📷 选择照片 / 拍照（可多选）
             <input id="projectImage" type="file" accept="image/*" multiple>
           </label>
-          <input id="projectCamera" class="hidden-file-input" type="file" accept="image/*" capture="environment">
         </div>
-        <p id="uploadStatus">一次可以选很多张，也可以之后继续追加。最多 20 张。</p>
+        <p id="uploadStatus">一次选几张就显示几张；再次选择会替换本次尚未保存的那一批，避免越叠越多。</p>
       </section>
 
       <div class="project-fields">
@@ -112,9 +110,9 @@
     </form>
   </dialog>
 
-  <script src="../image-tools.js"></script>
-  <script src="projects.js"></script>
-  <script src="homepage.js"></script>
-  <script src="dashboard.js"></script>
+  <script src="../image-tools.js?v=20260901-1715"></script>
+  <script src="projects.js?v=20260901-1715"></script>
+  <script src="homepage.js?v=20260901-1715"></script>
+  <script src="dashboard.js?v=20260901-1715"></script>
 </body>
 </html>
