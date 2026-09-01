@@ -1,0 +1,82 @@
+name: Cloudflare temporary preview
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-preview:
+    if: github.event.head_commit.message == 'Cloudflare temporary deploy accepted'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Deploy to temporary Cloudflare account
+        shell: bash
+        run: |
+          set -euo pipefail
+          ADMIN_TOKEN="$(openssl rand -hex 32)"
+          LOG_FILE="$(mktemp)"
+
+          set +e
+          npx -y wrangler@latest deploy --temporary --config wrangler.temporary.toml --var "ADMIN_API_TOKEN:${ADMIN_TOKEN}" >"$LOG_FILE" 2>&1
+          STATUS=$?
+          set -e
+
+          # Never expose the bearer-style Cloudflare claim URL in public Actions logs.
+          sed -E 's#https://dash\.cloudflare\.com/claim-preview\?[^[:space:]]+#CLAIM_URL_REDACTED#g' "$LOG_FILE"
+          if [ "$STATUS" -ne 0 ]; then
+            exit "$STATUS"
+          fi
+
+          PREVIEW_URL="$(grep -Eo 'https://[A-Za-z0-9._-]+\.workers\.dev' "$LOG_FILE" | tail -n1 || true)"
+          CLAIM_URL="$(grep -Eo 'https://dash\.cloudflare\.com/claim-preview\?[^[:space:]]+' "$LOG_FILE" | tail -n1 || true)"
+          if [ -z "$PREVIEW_URL" ] || [ -z "$CLAIM_URL" ]; then
+            echo 'Could not extract preview or claim URL.' >&2
+            exit 1
+          fi
+
+          cat > /tmp/claim-public.pem <<'PEM'
+          -----BEGIN PUBLIC KEY-----
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnyj3n1cnJWrt2pY8PTpr
+          0DSF4qL4ufAkuXsD5dOcnzoDm3EvFdhqDQTK1n2IkcdJ/HPrssNsCIv+U7SxCiL3
+          4KU4IvwTuDya/4M78e+c9Zf8Nafp7x3k7sIlYm36VTRuT+788pqXGiUAFwdFiVER
+          C2szEP8835gXVHm+SmXt5bsRxyWvSw7DBlbGG43AnX+J6DKDC2x1Ng8cSDA206uo
+          AAf9YCeyMm/7W1pCyFfyoraiBy+Mm2lSCJwHb2StTEA2GqNbhJpqENfr5RLquNaT
+          TcxeM49qMBPqd7EaZXC+wyi8qS9v+hy9tbnH3HXZvyzD7XuumZB+J/X+s1RsgMh5
+          0QIDAQAB
+          -----END PUBLIC KEY-----
+          PEM
+
+          CLAIM_ENCRYPTED="$(printf '%s' "$CLAIM_URL" | openssl pkeyutl -encrypt -pubin -inkey /tmp/claim-public.pem -pkeyopt rsa_padding_mode:oaep | base64 -w0)"
+          ADMIN_ENCRYPTED="$(printf '%s' "$ADMIN_TOKEN" | openssl pkeyutl -encrypt -pubin -inkey /tmp/claim-public.pem -pkeyopt rsa_padding_mode:oaep | base64 -w0)"
+
+          echo "PREVIEW_URL=$PREVIEW_URL"
+          echo "CLAIM_ENCRYPTED=$CLAIM_ENCRYPTED"
+          echo "ADMIN_ENCRYPTED=$ADMIN_ENCRYPTED"
+
+          echo 'Checking real Cloudflare deployment...'
+          curl --fail --silent --show-error "$PREVIEW_URL/" >/dev/null
+
+          RESPONSE="$(curl --fail --silent --show-error -X POST "$PREVIEW_URL/api/inquiries" \
+            -H 'Accept: application/json' \
+            -F 'name=Cloudflare Preview Test' \
+            -F 'city=Rotterdam' \
+            -F 'contact=preview-test' \
+            -F 'type=carpentry' \
+            -F 'message=Temporary deployment smoke test' \
+            -F 'lang=zh' \
+            -F 'consent=yes')"
+          echo "$RESPONSE" | grep -q '"ok":true'
+
+          LIST="$(curl --fail --silent --show-error "$PREVIEW_URL/api/inquiries?limit=5" -H "Authorization: Bearer $ADMIN_TOKEN")"
+          echo "$LIST" | grep -q 'Cloudflare Preview Test'
+          echo 'REAL_CLOUDFLARE_SMOKE_TEST=PASS'
