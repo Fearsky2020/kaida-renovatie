@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>客户询价 · 凯达装修后台</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <aside>
+    <div class="logo">凯达装修<small>管理后台</small></div>
+    <nav>
+      <a href="index.html">＋ 发布新工程</a>
+      <a>工程案例</a>
+      <a class="active" href="inquiries.html">客户询价 <b id="newCount">0</b></a>
+      <a>首页精选</a>
+      <a>网站资料</a>
+      <a href="../index.html" target="_blank">查看网站 ↗</a>
+    </nav>
+  </aside>
+
+  <main>
+    <header>
+      <div>
+        <span>KAIDA ADMIN · INQUIRIES</span>
+        <h1>客户询价</h1>
+        <p>客户提交后自动入库。这里查看联系方式、留言和现场照片，并标记处理进度。</p>
+      </div>
+      <button class="save" id="changeTokenBtn">管理员密钥</button>
+    </header>
+
+    <section class="card inquiry-toolbar">
+      <div>
+        <strong id="summaryText">正在连接后台…</strong>
+        <span id="connectionText">首次打开需要输入管理员密钥。</span>
+      </div>
+      <div class="toolbar-actions">
+        <select id="statusFilter" aria-label="按状态筛选">
+          <option value="">全部</option>
+          <option value="new">新询价</option>
+          <option value="contacted">已联系</option>
+          <option value="quoted">已报价</option>
+          <option value="won">已成交</option>
+          <option value="lost">未成交</option>
+        </select>
+        <button class="save" id="refreshBtn">刷新</button>
+      </div>
+    </section>
+
+    <section id="inquiryList" class="inquiry-list" aria-live="polite"></section>
+    <section id="emptyState" class="card empty-state" hidden>
+      <h2>还没有询价</h2>
+      <p>客户从网站报价表提交后，会自动出现在这里。</p>
+    </section>
+  </main>
+
+  <dialog id="detailDialog" class="detail-dialog">
+    <button class="dialog-close" id="closeDialog" aria-label="关闭">×</button>
+    <div id="detailBody"></div>
+  </dialog>
+
+  <script src="inquiries.js"></script>
+</body>
+</html>
