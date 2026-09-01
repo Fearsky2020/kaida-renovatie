@@ -4,17 +4,135 @@
   const before = document.querySelector('.compare-before');
   const after = document.querySelector('.compare-after');
   const allProjectsLink = document.querySelector('.center-actions .text-link');
+  const langToggle = document.getElementById('langToggle');
+  const LANG_KEY = 'kaida-lang';
   let visibleProjects = [];
   let lightbox = null;
   let activeProject = null;
   let activePhoto = 0;
 
-  if (allProjectsLink) allProjectsLink.href = 'projects.html';
+  const categoryNl = {
+    '全屋定制': 'Interieur op maat',
+    '室内翻新': 'Interieurrenovatie',
+    '餐馆装修': 'Restaurantverbouwing',
+    '花园翻新': 'Tuinrenovatie',
+    '橱柜定制': 'Maatwerk kasten',
+    '卫浴翻新': 'Badkamer & toilet',
+    '厕所 淋浴房': 'Badkamer & toilet',
+    '厕所/淋浴房': 'Badkamer & toilet'
+  };
+
+  function currentLang() {
+    return langToggle?.textContent?.trim() === '中文' ? 'nl' : 'zh';
+  }
+
+  function hasCjk(value) {
+    return /[\u3400-\u9fff]/.test(String(value || ''));
+  }
+
+  function categoryText(project) {
+    const category = project?.category || '';
+    if (currentLang() !== 'nl') return category;
+    return project?.categoryNl || categoryNl[category] || (hasCjk(category) ? 'Renovatieproject' : category);
+  }
+
+  function titleText(project) {
+    const title = project?.title || '';
+    if (currentLang() !== 'nl') return title || '工程案例';
+    if (project?.titleNl) return project.titleNl;
+    if (title && !hasCjk(title)) return title;
+    const type = categoryText(project) || 'Renovatieproject';
+    return project?.city ? `${type} · ${project.city}` : type;
+  }
+
+  function descriptionText(project) {
+    const description = project?.description || '';
+    if (currentLang() !== 'nl') return description;
+    if (project?.descriptionNl) return project.descriptionNl;
+    return hasCjk(description) ? '' : description;
+  }
+
+  function syncProjectLink() {
+    if (allProjectsLink) allProjectsLink.href = `projects.html?lang=${currentLang()}`;
+  }
+
+  function syncLocaleExtras() {
+    const nl = currentLang() === 'nl';
+    try { localStorage.setItem(LANG_KEY, nl ? 'nl' : 'zh'); } catch {}
+    syncProjectLink();
+
+    const brandTitle = document.querySelector('.site-header .brand-cn');
+    if (brandTitle) brandTitle.textContent = nl ? 'KAIDA RENOVATIE' : '凯达装修';
+    const footerTitle = document.querySelector('.site-footer .footer-brand-copy strong');
+    if (footerTitle) footerTitle.textContent = nl ? 'KAIDA RENOVATIE' : '凯达装修';
+
+    const trustItems = document.querySelectorAll('.trust-strip .trust-item');
+    if (trustItems[0]) {
+      const strong = trustItems[0].querySelector('strong');
+      const span = trustItems[0].querySelector('span');
+      if (strong) strong.textContent = nl ? 'Woning & bedrijfsruimte' : '住宅与商业空间';
+      if (span) span.textContent = nl ? 'Maatwerk · renovatie · uitvoering' : '定制 · 翻新 · 施工';
+    }
+    if (trustItems[1]) {
+      const strong = trustItems[1].querySelector('strong');
+      const span = trustItems[1].querySelector('span');
+      if (strong) strong.textContent = nl ? 'Van inmeten tot montage' : '从测量到安装';
+      if (span) span.textContent = nl ? 'Eén duidelijk traject, één team' : '一套流程完成，沟通更清楚';
+    }
+
+    const directLinks = document.querySelectorAll('.contact-direct a');
+    if (directLinks[0]) directLinks[0].textContent = nl ? 'Telefoon: +31 6 2119 1341' : '电话：+31 6 2119 1341';
+    if (directLinks[1]) directLinks[1].textContent = nl ? 'E-mail: kailunlin0824@gmail.com' : '邮箱：kailunlin0824@gmail.com';
+
+    const privacyLink = document.querySelector('.footer-links a[href="privacy.html"]');
+    if (privacyLink) privacyLink.textContent = nl ? 'Privacy' : '隐私说明';
+
+    const consent = document.querySelector('#quoteForm .consent span');
+    if (consent) {
+      consent.innerHTML = nl
+        ? 'Ik geef toestemming om mijn gegevens te bewaren en contact met mij op te nemen. <a href="privacy.html" target="_blank" rel="noopener">Privacy</a>'
+        : '我同意凯达装修保存这些资料并联系我。 <a href="privacy.html" target="_blank" rel="noopener">隐私说明</a>';
+    }
+
+    document.querySelectorAll('.brand-mark').forEach((img) => {
+      img.src = 'assets/kaida-mark.svg?v=20260901-2245';
+    });
+
+    visibleProjects.forEach((project, index) => applyProject(projectCards[index], project, index));
+    if (lightbox && !lightbox.hidden && activeProject) renderLightboxText();
+  }
+
+  function mountThemeToggle() {
+    const actions = document.querySelector('.header-actions');
+    if (!actions || actions.querySelector('[data-theme-toggle]')) return;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'theme-toggle';
+    button.dataset.themeToggle = '';
+    button.setAttribute('aria-label', '切换明暗模式');
+    actions.insertBefore(button, langToggle || actions.firstChild);
+
+    if (!document.querySelector('script[data-kaida-theme]')) {
+      const script = document.createElement('script');
+      script.src = 'theme.js?v=20260901-2245';
+      script.dataset.kaidaTheme = '1';
+      document.body.appendChild(script);
+    }
+  }
+
+  try {
+    const savedLang = localStorage.getItem(LANG_KEY);
+    if (savedLang === 'nl' && currentLang() !== 'nl') langToggle?.click();
+  } catch {}
+
+  langToggle?.addEventListener('click', () => setTimeout(syncLocaleExtras, 0));
+  mountThemeToggle();
+  syncLocaleExtras();
 
   if (!document.querySelector('link[href="project-gallery.css"]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'project-gallery.css';
+    link.href = 'project-gallery.css?v=20260901-2230';
     document.head.appendChild(link);
   }
 
@@ -37,22 +155,25 @@
     setBg(card.querySelector('.project-image'), photos[0] || project.image);
     const title = card.querySelector('h3');
     const meta = card.querySelector('.project-meta p');
-    if (title && project.title) {
+    if (title) {
       title.removeAttribute('data-i18n');
-      title.textContent = project.title;
+      title.textContent = titleText(project);
     }
-    if (meta && (project.city || project.category)) {
+    if (meta) {
       meta.innerHTML = '';
-      meta.append(document.createTextNode(`${project.city || ''}${project.city && project.category ? ' · ' : ''}`));
+      const category = categoryText(project);
+      meta.append(document.createTextNode(`${project.city || ''}${project.city && category ? ' · ' : ''}`));
       const cat = document.createElement('span');
-      cat.textContent = project.category || '';
+      cat.textContent = category;
       meta.appendChild(cat);
-      if (photos.length > 1) meta.append(document.createTextNode(` · ${photos.length} 张`));
+      if (photos.length > 1) {
+        meta.append(document.createTextNode(currentLang() === 'nl' ? ` · ${photos.length} foto’s` : ` · ${photos.length} 张`));
+      }
     }
     card.dataset.projectIndex = String(index);
     card.tabIndex = 0;
     card.setAttribute('role', 'button');
-    card.setAttribute('aria-label', `查看 ${project.title || '工程'} 的照片`);
+    card.setAttribute('aria-label', currentLang() === 'nl' ? `Bekijk foto's van ${titleText(project)}` : `查看 ${titleText(project)} 的照片`);
   }
 
   function ensureLightbox() {
@@ -94,6 +215,14 @@
     return root;
   }
 
+  function renderLightboxText() {
+    if (!activeProject || !lightbox) return;
+    lightbox.querySelector('h2').textContent = titleText(activeProject);
+    lightbox.querySelector('.project-lightbox-meta').textContent = [activeProject.city, categoryText(activeProject)].filter(Boolean).join(' · ');
+    lightbox.querySelector('.project-lightbox-desc').textContent = descriptionText(activeProject);
+    lightbox.querySelector('.project-lightbox-desc').hidden = !descriptionText(activeProject);
+  }
+
   function renderActivePhoto() {
     if (!activeProject || !lightbox) return;
     const photos = photosOf(activeProject);
@@ -101,7 +230,7 @@
     activePhoto = (activePhoto + photos.length) % photos.length;
     const img = lightbox.querySelector('.project-lightbox-media img');
     img.src = photos[activePhoto];
-    img.alt = `${activeProject.title || '工程'} · 照片 ${activePhoto + 1}`;
+    img.alt = currentLang() === 'nl' ? `${titleText(activeProject)} · foto ${activePhoto + 1}` : `${titleText(activeProject)} · 照片 ${activePhoto + 1}`;
     lightbox.querySelector('.project-lightbox-count').textContent = `${activePhoto + 1} / ${photos.length}`;
     const prev = lightbox.querySelector('.project-lightbox-prev');
     const next = lightbox.querySelector('.project-lightbox-next');
@@ -118,15 +247,13 @@
     const root = ensureLightbox();
     activeProject = project;
     activePhoto = 0;
-    root.querySelector('h2').textContent = project.title || '工程案例';
-    root.querySelector('.project-lightbox-meta').textContent = [project.city, project.category].filter(Boolean).join(' · ');
-    root.querySelector('.project-lightbox-desc').textContent = project.description || '';
+    renderLightboxText();
     const thumbs = root.querySelector('.project-lightbox-thumbs');
     thumbs.innerHTML = '';
     photos.forEach((url, index) => {
       const button = document.createElement('button');
       button.type = 'button';
-      button.setAttribute('aria-label', `查看第 ${index + 1} 张`);
+      button.setAttribute('aria-label', currentLang() === 'nl' ? `Bekijk foto ${index + 1}` : `查看第 ${index + 1} 张`);
       const image = document.createElement('img');
       image.src = url;
       image.alt = '';
