@@ -70,6 +70,7 @@ async function defaults() {
 
 function mergeContent(base, saved) {
   return {
+    ...saved,
     hero: { ...base.hero, ...(saved.hero || {}) },
     projects: base.projects.map((project, index) => ({ ...project, ...(saved.projects?.[index] || {}) })),
     beforeAfter: { ...base.beforeAfter, ...(saved.beforeAfter || {}) },
@@ -112,7 +113,7 @@ function render() {
     </section>
 
     <section class="section">
-      <div class="section-head"><div><h2>6 个精品工程</h2><p>首页最重要的内容。换图后会立刻使用新照片。</p></div></div>
+      <div class="section-head"><div><h2>6 个精品工程</h2><p>这里只改当前首页的 6 个。要添加更多工程或更换首页精选，请去“全部工程”。</p><p><a href="projects.html" style="font-weight:700;text-decoration:underline">打开全部工程案例库 →</a></p></div></div>
       <div class="project-edit-grid">${projects}</div>
     </section>
 
@@ -139,6 +140,22 @@ function setField(path, value) {
   if (parts[0] === 'hero') content.hero[parts[1]] = value;
   if (parts[0] === 'projects') content.projects[Number(parts[1])][parts[2]] = value;
   statusEl.textContent = '文字有修改，记得点保存';
+}
+
+function syncProjectLibrary() {
+  if (!Array.isArray(content.projectLibrary)) return;
+  content.projects.forEach((project) => {
+    if (!project?.id) return;
+    const index = content.projectLibrary.findIndex((item) => item.id === project.id);
+    if (index < 0) return;
+    content.projectLibrary[index] = {
+      ...content.projectLibrary[index],
+      title: project.title,
+      city: project.city,
+      category: project.category,
+      image: project.image,
+    };
+  });
 }
 
 async function uploadImage(slot, file) {
@@ -174,6 +191,7 @@ async function uploadImage(slot, file) {
 }
 
 async function saveContent(showMessage = true) {
+  syncProjectLibrary();
   await api('/api/admin/site-content', { method: 'PUT', body: JSON.stringify(content) });
   if (showMessage) statusEl.textContent = '✓ 已保存，网站已更新';
 }
