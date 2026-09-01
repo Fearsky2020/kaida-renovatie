@@ -27,7 +27,7 @@ export default {
     }
     if (url.pathname === "/api/admin/media" && request.method === "POST") {
       if (!requireAdmin(request, env)) return json({ ok: false, error: "Unauthorized" }, 401);
-      return uploadMedia(request, env, url.origin);
+      return uploadMedia(request, env);
     }
     if (url.pathname.startsWith("/cms-media/") && request.method === "GET") {
       return serveMedia(url.pathname.slice("/cms-media/".length), env);
@@ -47,27 +47,17 @@ async function loadSiteContent(env) {
       const object = await env.CMS_MEDIA.get(SITE_R2_KEY);
       if (object) {
         const content = JSON.parse(await object.text());
-        if (content && typeof content === "object") {
-          memorySiteContent = content;
-          return content;
-        }
+        if (content && typeof content === "object") { memorySiteContent = content; return content; }
       }
-    } catch (error) {
-      console.warn("CMS R2 read failed", error);
-    }
+    } catch (error) { console.warn("CMS R2 read failed", error); }
   }
   try {
     const cached = await caches.default.match(SITE_CACHE_KEY);
     if (cached) {
       const content = await cached.json();
-      if (content && typeof content === "object") {
-        memorySiteContent = content;
-        return content;
-      }
+      if (content && typeof content === "object") { memorySiteContent = content; return content; }
     }
-  } catch (error) {
-    console.warn("CMS cache read failed", error);
-  }
+  } catch (error) { console.warn("CMS cache read failed", error); }
   return memorySiteContent;
 }
 
@@ -83,13 +73,11 @@ async function saveSiteContent(env, content) {
   }));
 }
 
-async function uploadMedia(request, env, origin) {
+async function uploadMedia(request, env) {
   const form = await request.formData();
   const file = form.get("file");
   const slot = safeName(clean(form.get("slot"), 80) || "image");
-  if (!file || typeof file !== "object" || typeof file.arrayBuffer !== "function" || !file.size) {
-    return json({ ok: false, error: "请选择图片" }, 400);
-  }
+  if (!file || typeof file !== "object" || typeof file.arrayBuffer !== "function" || !file.size) return json({ ok: false, error: "请选择图片" }, 400);
   if (!String(file.type || "").startsWith("image/")) return json({ ok: false, error: "只支持图片文件" }, 400);
   if (file.size > 10 * 1024 * 1024) return json({ ok: false, error: "单张图片不能超过 10 MB" }, 400);
 
@@ -103,8 +91,8 @@ async function uploadMedia(request, env, origin) {
       customMetadata: { originalName: clean(file.name, 160), slot },
     });
   } else {
-    const cacheUrl = new URL(`/cms-media/${encodeURIComponent(key)}`, origin).toString();
-    await caches.default.put(new Request(cacheUrl), new Response(bytes, {
+    const cacheRequest = new Request(`https://kaida-preview.invalid/cms-media/${encodeURIComponent(key)}`);
+    await caches.default.put(cacheRequest, new Response(bytes, {
       headers: { "content-type": file.type || "application/octet-stream", "cache-control": "public, max-age=31536000" },
     }));
   }
@@ -135,7 +123,6 @@ async function previewApi(request, env) {
     if (!contentType.includes("multipart/form-data")) return json({ ok: false, error: "Form data required" }, 415);
     const form = await request.formData();
     if (clean(form.get("website"), 200)) return json({ ok: true, preview: true }, 202);
-
     const name = clean(form.get("name"), 120);
     const city = clean(form.get("city"), 120);
     const contact = clean(form.get("contact"), 180);
@@ -144,7 +131,6 @@ async function previewApi(request, env) {
     const message = clean(form.get("message"), 3000);
     const language = clean(form.get("lang"), 8) === "nl" ? "nl" : "zh";
     const consent = String(form.get("consent") || "") === "yes";
-
     if (!name || !city || !contact || !projectType) return json({ ok: false, error: "Required fields missing" }, 400);
     if (!consent) return json({ ok: false, error: language === "nl" ? "Toestemming is verplicht" : "请先同意资料保存与联系" }, 400);
 
@@ -213,7 +199,6 @@ function requireAdmin(request, env) {
   if (!env.ADMIN_API_TOKEN) return false;
   return (request.headers.get("authorization") || "") === `Bearer ${env.ADMIN_API_TOKEN}`;
 }
-
 function clean(value, max = 1000) { return String(value ?? "").trim().slice(0, max); }
 function safeName(value) { return String(value || "image").replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80) || "image"; }
 function safeExtension(name, type) {
