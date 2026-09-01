@@ -2,6 +2,13 @@
   const form = document.getElementById('quoteForm');
   if (!form) return;
 
+  if (!document.querySelector('link[href="inquiry.css"]')) {
+    const stylesheet = document.createElement('link');
+    stylesheet.rel = 'stylesheet';
+    stylesheet.href = 'inquiry.css';
+    document.head.appendChild(stylesheet);
+  }
+
   const status = document.getElementById('formStatus');
   const submitButton = form.querySelector('button[type="submit"]');
   const photosInput = form.querySelector('input[name="photos"]');
