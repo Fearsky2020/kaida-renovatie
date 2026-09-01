@@ -23,7 +23,7 @@
   };
 
   function currentLang() {
-    return langToggle?.textContent?.trim() === '中文' ? 'nl' : 'zh';
+    return document.documentElement.lang === 'nl' ? 'nl' : 'zh';
   }
 
   function hasCjk(value) {
@@ -60,6 +60,8 @@
     const nl = currentLang() === 'nl';
     try { localStorage.setItem(LANG_KEY, nl ? 'nl' : 'zh'); } catch {}
     syncProjectLink();
+
+    if (langToggle) langToggle.textContent = nl ? 'ZH' : 'NL';
 
     const brandTitle = document.querySelector('.site-header .brand-cn');
     if (brandTitle) brandTitle.textContent = nl ? 'KAIDA RENOVATIE' : '凯达装修';
@@ -129,7 +131,7 @@
   mountThemeToggle();
   syncLocaleExtras();
 
-  if (!document.querySelector('link[href="project-gallery.css"]')) {
+  if (!document.querySelector('link[href="project-gallery.css?v=20260901-2230"]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = 'project-gallery.css?v=20260901-2230';
@@ -166,9 +168,7 @@
       const cat = document.createElement('span');
       cat.textContent = category;
       meta.appendChild(cat);
-      if (photos.length > 1) {
-        meta.append(document.createTextNode(currentLang() === 'nl' ? ` · ${photos.length} foto’s` : ` · ${photos.length} 张`));
-      }
+      if (photos.length > 1) meta.append(document.createTextNode(currentLang() === 'nl' ? ` · ${photos.length} foto’s` : ` · ${photos.length} 张`));
     }
     card.dataset.projectIndex = String(index);
     card.tabIndex = 0;
