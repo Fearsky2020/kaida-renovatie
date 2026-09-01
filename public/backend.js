@@ -11,6 +11,37 @@
     wechatUrl: 'https://u.wechat.com/kCozOqTzL7Mo8-3Khw6a9nM?s=2',
   };
 
+  const metaDescription = document.querySelector('meta[name="description"]');
+  if (metaDescription) {
+    metaDescription.content = '凯达装修 — 服务荷兰全境、德国和比利时的室内装修、木工、定制家具、衣柜与厨房工程。微信 / WhatsApp 快速咨询。';
+  }
+
+  // Turn the old city-only service-area copy into bilingual NL/DE/BE coverage.
+  const serviceItem = document.querySelector('.trust-strip .trust-item:nth-child(3)');
+  if (serviceItem) {
+    const title = serviceItem.querySelector('strong');
+    const text = serviceItem.querySelector('span');
+    if (title) {
+      title.dataset.i18n = 'trust.area.title';
+      title.textContent = '服务荷兰、德国、比利时';
+    }
+    if (text) {
+      text.dataset.i18n = 'trust.area.text';
+      text.textContent = '荷兰全境 · 德国 · 比利时';
+    }
+  }
+
+  const contactNote = document.querySelector('.contact-note');
+  if (contactNote) {
+    const prefix = contactNote.querySelector('[data-i18n="contact.area"]');
+    if (prefix) {
+      const value = document.createElement('span');
+      value.dataset.i18n = 'contact.area.value';
+      value.textContent = '荷兰 · 德国 · 比利时';
+      contactNote.replaceChildren(prefix, document.createTextNode(' '), value);
+    }
+  }
+
   document.querySelectorAll('a[href="https://wa.me/31600000000"]').forEach((link) => {
     link.href = `https://wa.me/${CONTACTS.whatsappDigits}`;
     link.title = `WhatsApp ${CONTACTS.phoneDisplay}`;
