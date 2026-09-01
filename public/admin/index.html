@@ -79,8 +79,11 @@
           <img id="projectPreview" alt="工程图片" hidden>
         </div>
         <div>
-          <label class="project-image-picker">拍照 / 从相册选择<input id="projectImage" type="file" accept="image/*"></label>
-          <p id="uploadStatus">手机会自动提供相机或相册选项。</p>
+          <div class="project-image-actions">
+            <label class="project-image-picker">📷 现场拍照<input id="projectCamera" type="file" accept="image/*" capture="environment"></label>
+            <label class="project-image-picker">🖼 从相册选择<input id="projectImage" type="file" accept="image/*"></label>
+          </div>
+          <p id="uploadStatus">照片会自动压缩成适合网站的大小再上传。</p>
         </div>
       </div>
 
@@ -104,6 +107,7 @@
     </form>
   </dialog>
 
+  <script src="../image-tools.js"></script>
   <!-- 工程模块先启动并读取密码，首页模块随后复用同一份 sessionStorage，避免双弹窗。 -->
   <script src="projects.js"></script>
   <script src="homepage.js"></script>
