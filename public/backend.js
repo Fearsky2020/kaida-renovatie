@@ -1,9 +1,25 @@
 (() => {
   const CONTACTS = {
+    email: 'kailunlin0824@gmail.com',
+    phoneLocal: '0621191341',
+    phoneDisplay: '06 2119 1341',
+    phoneE164: '+31621191341',
+    whatsappDigits: '31621191341',
     wechatId: 'linkailunLKL5566',
     wechatName: 'KaiLun / 凯伦',
     wechatArea: 'Rotterdam / 鹿特丹',
   };
+
+  document.querySelectorAll('a[href="https://wa.me/31600000000"]').forEach((link) => {
+    link.href = `https://wa.me/${CONTACTS.whatsappDigits}`;
+    link.title = `WhatsApp ${CONTACTS.phoneDisplay}`;
+  });
+
+  document.querySelectorAll('a[href="mailto:info@example.nl"]').forEach((link) => {
+    link.href = `mailto:${CONTACTS.email}`;
+    link.title = CONTACTS.email;
+    if (link.textContent.trim() === 'Email') link.textContent = CONTACTS.email;
+  });
 
   const wechatId = document.getElementById('wechatId');
   if (wechatId) {
