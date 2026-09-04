@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 500" role="img" aria-labelledby="title desc">
+  <title id="title">凯达装修 · Kai Da Company</title>
+  <desc id="desc">房顶、KD 字母和凯达装修公司名称组成的标志</desc>
+  <g fill="#050505">
+    <path d="M28 194 455 8l428 186H708L455 84 203 194Z"/>
+    <path d="M45 212h105v238H45Zm100 118 118-118h136L258 337l145 113H268Z"/>
+    <path fill-rule="evenodd" d="M604 212H485c-84 0-139 48-139 119s55 119 139 119h119Zm-76 66h-39c-38 0-61 19-61 53s23 53 61 53h39Z"/>
+    <text x="650" y="338" font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC','Source Han Sans SC',sans-serif" font-size="94" font-weight="400" letter-spacing="5">凯达装修</text>
+    <text x="660" y="423" font-family="Avenir,Montserrat,'Helvetica Neue',Arial,sans-serif" font-size="48" font-weight="300" letter-spacing="1.5">Kai Da Company</text>
+  </g>
+</svg>
