@@ -148,6 +148,12 @@ function hardenResponse(response, pathname) {
   headers.set("x-frame-options", "SAMEORIGIN");
   headers.set("permissions-policy", "camera=(self), microphone=(), geolocation=()");
 
+  // The HTML shell changes with each release. Never let an edge cache keep an
+  // older shell that points at stale branding or scripts after a deployment.
+  if (pathname === "/" || pathname.endsWith(".html")) {
+    headers.set("cache-control", "no-store, no-cache, must-revalidate");
+  }
+
   if (pathname.startsWith("/admin")) {
     headers.set("x-robots-tag", "noindex, nofollow, noarchive");
     headers.set("cache-control", "no-store");
