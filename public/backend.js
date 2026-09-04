@@ -41,19 +41,14 @@
   const brand = document.querySelector('.site-header .brand');
   if (brand) {
     brand.innerHTML = `
-      <img class="brand-mark" src="assets/kaida-mark.svg" alt="" aria-hidden="true">
-      <span class="brand-copy">
-        <span class="brand-cn">凯达装修</span>
-        <span class="brand-sub">KAIDA RENOVATIE & MAATWERK</span>
-      </span>`;
+      <img class="brand-logo" src="assets/kaida-logo.svg?v=20260904-2" alt="凯达装修 · Kai Da Company">`;
   }
 
   const footerBrand = document.querySelector('.site-footer > div:first-child');
   if (footerBrand) {
     footerBrand.classList.add('footer-brand');
     footerBrand.innerHTML = `
-      <img class="brand-mark" src="assets/kaida-mark.svg" alt="凯达装修">
-      <span class="footer-brand-copy"><strong>凯达装修</strong><span>KAIDA RENOVATIE & MAATWERK</span></span>`;
+      <img class="footer-brand-logo" src="assets/kaida-logo.svg?v=20260904-2" alt="凯达装修 · Kai Da Company">`;
   }
 
   const aboutIcons = [
